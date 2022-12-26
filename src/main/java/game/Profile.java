@@ -14,4 +14,12 @@ public class Profile {
         setBio(bio);
         setImage(image);
     }
+
+    @Override
+    public String toString() {
+        return "Profile{" +
+                "bio='" + bio + '\'' +
+                ", image='" + image + '\'' +
+                '}';
+    }
 }

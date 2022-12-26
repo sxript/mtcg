@@ -13,7 +13,7 @@ public interface Dao<T> {
     void save(T t);
 
     // UPDATE
-    void update(T t, String[] params);
+    void update(T t, T d);
 
     // DELETE
     void delete(T t);

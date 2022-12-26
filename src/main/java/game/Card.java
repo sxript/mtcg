@@ -11,7 +11,7 @@ abstract class Card {
     private int damage;
     private Element elementType;
 
-    public Card(String name, int damage, Element elementType) {
+    protected Card(String name, int damage, Element elementType) {
         setName(name);
         setDamage(damage);
         setElementType(elementType);
