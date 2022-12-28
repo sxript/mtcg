@@ -1,8 +1,6 @@
 package app.models;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import game.Deck;
 import lombok.*;
 
 import java.util.ArrayList;

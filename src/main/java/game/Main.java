@@ -1,26 +1,21 @@
 package game;
 
 import app.App;
-import app.dao.UserDao;
-import app.models.Profile;
+import app.models.*;
 import db.DBConnection;
 import server.Server;
-import app.models.Stats;
-import app.models.User;
-import java.util.Collection;
-import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("HEY");
-        MonsterCard goblin = new MonsterCard("Goblin", 4, Element.NORMAL);
-        MonsterCard dragon = new MonsterCard("Dragon", 10, Element.FIRE);
-        MonsterCard wizard = new MonsterCard("Wizard", 7, Element.FIRE);
-        MonsterCard ork = new MonsterCard("Ork", 6, Element.NORMAL);
-        MonsterCard knight = new MonsterCard("Knight", 5, Element.NORMAL);
-        MonsterCard kraken = new MonsterCard("Kraken", 9, Element.WATER);
-        SpellCard waterSpell = new SpellCard("WATER TORNADO", 8, Element.WATER);
-        SpellCard fireSpell = new SpellCard("FIRE DANCE", 6, Element.FIRE);
+//        MonsterCard goblin = new MonsterCard("Goblin", 4, Element.NORMAL);
+//        MonsterCard dragon = new MonsterCard("Dragon", 10, Element.FIRE);
+//        MonsterCard wizard = new MonsterCard("Wizard", 7, Element.FIRE);
+//        MonsterCard ork = new MonsterCard("Ork", 6, Element.NORMAL);
+//        MonsterCard knight = new MonsterCard("Knight", 5, Element.NORMAL);
+//        MonsterCard kraken = new MonsterCard("Kraken", 9, Element.WATER);
+//        SpellCard waterSpell = new SpellCard("WATER TORNADO", 8, Element.WATER);
+//        SpellCard fireSpell = new SpellCard("FIRE DANCE", 6, Element.FIRE);
 
         DBConnection db = DBConnection.getInstance();
         db.getConnection();

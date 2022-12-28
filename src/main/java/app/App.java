@@ -1,7 +1,11 @@
 package app;
 
+import app.controllers.CardController;
 import app.controllers.Controller;
+import app.controllers.PackageController;
 import app.controllers.UserController;
+import app.dao.CardDao;
+import app.dao.PackageDao;
 import app.dao.UserDao;
 import http.ContentType;
 import http.HttpStatus;
@@ -16,9 +20,13 @@ import server.ServerApp;
 @Getter(AccessLevel.PRIVATE)
 public class App implements ServerApp {
     private UserController userController;
+    private CardController cardController;
+    private PackageController packageController;
 
     public App() {
         setUserController(new UserController(new UserDao()));
+        setCardController(new CardController(new CardDao()));
+        setPackageController(new PackageController(new PackageDao()));
     }
 
     @Override
@@ -46,7 +54,8 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/sessions")) {
                     return getUserController().loginUser(request.getBody());
                 } else if (request.getPathName().equals("/packages")) {
-                    System.out.println("CREATES PACKAGE");
+                    String packageId = getPackageController().createPackage();
+                    return getCardController().createCard(request.getBody(), packageId);
                 } else if (request.getPathName().equals("/transactions/packages")) {
                     System.out.println("BUY A PACKAGE");
                 } else if (request.getPathName().equals("/battles")) {

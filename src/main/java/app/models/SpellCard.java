@@ -1,12 +1,18 @@
-package game;
+package app.models;
 
-import game.Card;
-import game.Element;
+import enums.Element;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter(AccessLevel.PUBLIC)
+@Setter(AccessLevel.PUBLIC)
+@NoArgsConstructor
 public class SpellCard extends Card {
 
-    public SpellCard(String name, int damage, Element elementType) {
-        super(name, damage, elementType);
+    public SpellCard(String id, String name, int damage, Element elementType, String packageId) {
+        super(id , name, damage, elementType, packageId);
     }
 
     public int damageEffectiveness(Element opponentElementType) {
