@@ -1,25 +1,24 @@
-package game;
+package app.models;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@ToString
 public class Profile {
+    @JsonAlias({"Id"})
+    private String id;
+
+    @JsonAlias({"Bio"})
     private String bio;
+
+    @JsonAlias({"Image"})
     private String image;
 
     public Profile () {}
-    public Profile(String bio, String image) {
-        setBio(bio);
-        setImage(image);
-    }
-
-    @Override
-    public String toString() {
-        return "Profile{" +
-                "bio='" + bio + '\'' +
-                ", image='" + image + '\'' +
-                '}';
-    }
 }

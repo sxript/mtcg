@@ -1,9 +1,0 @@
-
-q
-java:S1128"TRemove this unnecessary import: same package classes are always implicitly imported.(—À¿”8ÓÿÚÚÔ0
-€
-java:S1319"eThe type of "cards" should be an interface such as "List" rather than the implementation "ArrayList".(¶ã¤†şÿÿÿÿ
-
-java:S1319"pThe return type of this method should be an interface such as "List" rather than the implementation "ArrayList".(îÃ°·8–•î©Â0
-)
-java:S1700	"Rename field "deck"(Íş–ï

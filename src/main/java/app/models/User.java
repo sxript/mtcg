@@ -1,13 +1,9 @@
 package app.models;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import game.Deck;
-import game.Profile;
-import game.Stats;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,49 +12,55 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class User {
     private static final int START_COINS = 20;
 
 //    @JsonAlias({"id"})
-//    private String id;
+//    String id;
 
-    @JsonAlias({"name"})
-    private String name;
+    @JsonAlias({"Name"})
+    String name;
 
-    @JsonAlias({"username"})
-    private String username;
+    @JsonAlias({"Username"})
+    String username;
 
-    @JsonAlias({"password"})
-    private String password;
+    @JsonAlias({"Password"})
+    String password;
 
-    @JsonAlias({"coins"})
-    private int coins;
+    @JsonAlias({"Coins"})
+    @JsonSetter(nulls = Nulls.SKIP)
+    int coins = START_COINS;
 
-    @JsonAlias({"stack"})
-    private List<String> stack;
+    @JsonAlias({"Stack"})
+    List<String> stack;
 
-    @JsonAlias({"deck"})
-    private Deck deck;
+    @JsonAlias({"Deck"})
+    Deck deck;
 
-    @JsonAlias({"stats"})
-    private Stats stats;
+    @JsonAlias({"Stats"})
+    @JsonSetter(nulls = Nulls.SKIP)
+    @JsonUnwrapped
+    Stats stats = new Stats();
 
-    @JsonAlias({"profile"})
-    private Profile profile;
+    @JsonAlias({"Profile"})
+    @JsonUnwrapped
+    Profile profile;
 
-    public User(String name, String username, String password, int coins, Stats stats, Profile profile) {
+    public User(String name, String username, String password, Integer coins, Stats stats, Profile profile) {
         setName(name);
         setUsername(username);
         setPassword(password);
         setCoins(coins);
         setStats(stats);
         setProfile(profile);
-    }
 
+    }
     public User(String username, String password) {
         this(null, username, password, START_COINS, new ArrayList<>(), new Deck(), new Stats(), new Profile());
     }
-//    public Card drawCard() {
+
+    //    public Card drawCard() {
 //        return deck.getDeck().get(rnd.nextInt(deck.getDeck().size()));
 //    }
 //
@@ -69,17 +71,4 @@ public class User {
 //    public void addCard(Card card) {
 //        deck.getDeck().add(card);
 //    }
-    @Override
-    public String toString() {
-        return "User{" +
-                "name='" + name + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", coins=" + coins +
-                ", stack=" + stack +
-                ", deck=" + deck +
-                ", stats=" + stats +
-                ", profile=" + profile +
-                '}';
-    }
 }

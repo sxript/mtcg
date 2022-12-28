@@ -1,24 +1,32 @@
 package app;
 
 import app.controllers.Controller;
+import app.controllers.UserController;
+import app.dao.UserDao;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 import server.Request;
 import server.Response;
 import server.ServerApp;
 
 @Setter(AccessLevel.PRIVATE)
+@Getter(AccessLevel.PRIVATE)
 public class App implements ServerApp {
-    private Controller controller;
+    private UserController userController;
+
+    public App() {
+        setUserController(new UserController(new UserDao()));
+    }
 
     @Override
     public Response handleRequest(Request request) {
         switch (request.getMethod()) {
             case GET: {
                 if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1) {
-                    System.out.println("GET USER BY NAME");
+                    return getUserController().getUser(request.getPathParams().get(0));
                 } else if (request.getPathName().equals("/cards")) {
                     System.out.println("GET USER CARDS");
                 } else if (request.getPathName().equals("/decks")) {
@@ -34,9 +42,9 @@ public class App implements ServerApp {
             }
             case POST: {
                 if (request.getPathName().equals("/users")) {
-                    System.out.println("CREATE USER");
+                    return getUserController().createUser(request.getBody());
                 } else if (request.getPathName().equals("/sessions")) {
-                    System.out.println("LOGIN WITH USER");
+                    return getUserController().loginUser(request.getBody());
                 } else if (request.getPathName().equals("/packages")) {
                     System.out.println("CREATES PACKAGE");
                 } else if (request.getPathName().equals("/transactions/packages")) {
@@ -52,7 +60,7 @@ public class App implements ServerApp {
             }
             case PUT:
                 if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1) {
-                    System.out.println("UPDATE USER");
+                    return getUserController().updateUser(request.getPathParams().get(0), request.getBody());
                 }  else if (request.getPathName().equals("/decks")) {
                     System.out.println("CONFIGURE THE DECK");
                 }

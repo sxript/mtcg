@@ -1,6 +1,6 @@
 package app.services;
 
-import game.User;
+import app.models.User;
 
 public class UserService {
 

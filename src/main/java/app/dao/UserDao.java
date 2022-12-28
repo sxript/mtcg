@@ -1,8 +1,8 @@
 package app.dao;
 
 import db.DBConnection;
-import game.Profile;
-import game.Stats;
+import app.models.Profile;
+import app.models.Stats;
 import app.models.User;
 
 import java.sql.PreparedStatement;
@@ -106,7 +106,8 @@ public class UserDao implements Dao<User> {
                 )
                 INSERT INTO "Profile"
                 (id, bio, image, userid)
-                VALUES (?, ?, ?, (select * from "user_insert"));
+                VALUES (?, ?, ?, (select * from "user_insert"))
+                RETURNING userid;
                 """)) {
             // Insert Into User
             statement.setString(1, userId);
@@ -126,7 +127,13 @@ public class UserDao implements Dao<User> {
             statement.setString(11, profile.getImage());
 
             // Execute Query
-            statement.executeUpdate();
+            // TODO: EXECUTE UPDATE
+            statement.execute();
+            try (ResultSet rs = statement.getResultSet()) {
+                if (rs.next()) {
+                    System.out.println(rs.getString(1));
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
