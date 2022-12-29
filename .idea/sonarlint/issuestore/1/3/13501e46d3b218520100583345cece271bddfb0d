@@ -1,12 +1,0 @@
-
-q
-java:S1128"TRemove this unnecessary import: same package classes are always implicitly imported.(—À¿”8íÎÑ§Ô0
-=
-java:S1068"(Remove this unused "COST" private field.(¦„<
-C
-java:S1068	"(Remove this unused "SIZE" private field.(áÏ´¡ûÿÿÿÿ
-?
-java:S1068
-")Remove this unused "cards" private field.(Êıé—
-‚
-java:S1319"eThe type of "cards" should be an interface such as "List" rather than the implementation "ArrayList".(é«“Ë8ßÅÅ©Â0

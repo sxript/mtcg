@@ -2,6 +2,7 @@ package app;
 
 import app.controllers.*;
 import app.dao.CardDao;
+import app.dao.DeckDao;
 import app.dao.PackageDao;
 import app.dao.UserDao;
 import http.ContentType;
@@ -25,7 +26,7 @@ public class App implements ServerApp {
         setUserController(new UserController(new UserDao()));
         setCardController(new CardController(new CardDao()));
         setPackageController(new PackageController(new PackageDao()));
-        setPackageCardUserController(new PackageCardUserController(new UserDao(), new PackageDao(), new CardDao()));
+        setPackageCardUserController(new PackageCardUserController(new UserDao(), new PackageDao(), new CardDao(), new DeckDao()));
     }
 
     @Override
@@ -70,7 +71,7 @@ public class App implements ServerApp {
                 if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1) {
                     return getUserController().updateUser(request.getPathParams().get(0), request.getBody());
                 }  else if (request.getPathName().equals("/decks")) {
-                    System.out.println("CONFIGURE THE DECK");
+                    return getPackageCardUserController().setUserDeck(request.getAuthorization(), request.getBody());
                 }
                 break;
             case DELETE: {

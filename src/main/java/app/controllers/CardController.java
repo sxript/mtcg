@@ -49,6 +49,7 @@ public class CardController extends Controller {
         return getObjectMapper().readValue(rawCard, Card.class);
     }
 
+    // TODO: DOES THIS MATCH THE RIGHT STATUS CODES
     public Response createCard(String rawCard, String packageId) {
         Card card;
 
@@ -59,7 +60,7 @@ public class CardController extends Controller {
                 for (JsonNode node : obj) {
                     card = parseCard(getObjectMapper().writeValueAsString(node));
                     Response response = createCard(card, packageId);
-                    if (response.getStatusCode() < 200 && response.getStatusCode() > 299) {
+                    if (response.getStatusCode() < 200 || response.getStatusCode() > 299) {
                         rollbackUserInsert(createdCards, packageId);
                         throw new CustomJsonProcessingException("Card parsing failed");
                     }

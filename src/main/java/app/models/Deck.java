@@ -1,21 +1,28 @@
 package app.models;
 
-import app.models.Card;
 
-import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.UUID;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Deck {
-    private static final int DECK_SIZE = 4;
-    private ArrayList<Card> deck;
+    public static final int DECK_SIZE = 4;
 
+    @JsonAlias({"Id"})
+    private String id = UUID.randomUUID().toString();
 
-    public void setDeck(ArrayList<Card> cards) {
-        if (cards.size() == DECK_SIZE) {
-            deck = cards;
-        }
-    }
+    @JsonAlias({"user_id"})
+    private String userId;
 
-    public ArrayList<Card> getDeck() {
-        return deck;
+    public Deck(String userId) {
+        setUserId(userId);
     }
 }

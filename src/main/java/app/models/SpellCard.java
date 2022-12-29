@@ -11,8 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SpellCard extends Card {
 
-    public SpellCard(String id, String name, float damage, Element elementType, String packageId, String userId) {
-        super(id , name, damage, elementType, packageId, userId);
+    public SpellCard(String id, String name, float damage, Element elementType, String packageId, String userId, String deckId) {
+        super(id , name, damage, elementType, packageId, userId, deckId);
     }
 
     public float damageEffectiveness(Element opponentElementType) {

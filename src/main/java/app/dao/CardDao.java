@@ -13,8 +13,25 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class CardDao implements Dao<Card> {
+    private final CardFactory cardFactory = new CardFactory();
+
     @Override
     public Optional<Card> get(String id) {
+
+        try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+                SELECT id, name, damage, element, package_id, user_id, deck_id
+                FROM "Card"
+                WHERE id = ?;
+                """)
+        ) {
+            statement.setString(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return Optional.of(createCardFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return Optional.empty();
     }
 
@@ -23,35 +40,39 @@ public class CardDao implements Dao<Card> {
         return null;
     }
 
-    public Collection<Card> getAllByPackageIdOrUserId(String packageId, String userId) {
+    public Collection<Card> getAllByPackageUserDeckId(String packageId, String userId, String deckId) {
         ArrayList<Card> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, name, damage, element, package_id, user_id
+                SELECT id, name, damage, element, package_id, user_id, deck_id
                 FROM "Card"
-                WHERE package_id = ? OR user_id = ?;
+                WHERE package_id = ? OR user_id = ? OR deck_id = ?;
                 """)
         ) {
             statement.setString(1, packageId);
             statement.setString(2, userId);
+            statement.setString(3, deckId);
             ResultSet resultSet = statement.executeQuery();
 
-            CardFactory cardFactory = new CardFactory();
-
             while (resultSet.next()) {
-                Card card = cardFactory.create(resultSet.getString(2).toLowerCase(Locale.ROOT).contains("spell") ? Type.SPELL : Type.MONSTER);
-                card.setId(resultSet.getString(1));
-                card.setName(resultSet.getString(2));
-                card.setDamage(resultSet.getFloat(3));
-                card.setElementType(Element.valueOf(resultSet.getString(4)));
-                card.setPackageId(resultSet.getString(5));
-                card.setUserId(resultSet.getString(6));
+                Card card = createCardFromResultSet(resultSet);
                 result.add(card);
             }
-            System.out.println(result);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return result;
+    }
+
+    private Card createCardFromResultSet(ResultSet resultSet) throws SQLException {
+        Card card = cardFactory.create(resultSet.getString(2).toLowerCase(Locale.ROOT).contains("spell") ? Type.SPELL : Type.MONSTER);
+        card.setId(resultSet.getString(1));
+        card.setName(resultSet.getString(2));
+        card.setDamage(resultSet.getFloat(3));
+        card.setElementType(Element.valueOf(resultSet.getString(4)));
+        card.setPackageId(resultSet.getString(5));
+        card.setUserId(resultSet.getString(6));
+        card.setDeckId(resultSet.getString(7));
+        return card;
     }
 
     @Override
@@ -77,10 +98,11 @@ public class CardDao implements Dao<Card> {
     }
 
     @Override
+    // TODO: UPDATE most of the time i call it with the same instance twice ?!?
     public void update(Card card, Card updatedCard) {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Card"
-                SET name = ?, damage = ?, element = ?::"Element" , package_id = ?, user_id = ?
+                SET name = ?, damage = ?, element = ?::"Element", package_id = ?, user_id = ?, deck_id = ?
                 WHERE id = ?
                 """)
         ) {
@@ -90,10 +112,10 @@ public class CardDao implements Dao<Card> {
             statement.setString(3, updatedCard.getElementType().name());
             statement.setString(4, updatedCard.getPackageId());
             statement.setString(5, updatedCard.getUserId());
+            statement.setString(6, updatedCard.getDeckId());
 
-            // USE CURRENT USERNAME
-            System.out.println(card);
-            statement.setString(6, card.getId());
+            // USE CURRENT ID
+            statement.setString(7, card.getId());
 
             statement.executeUpdate();
         } catch (SQLException e) {

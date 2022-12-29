@@ -41,13 +41,17 @@ public abstract class Card {
     @JsonAlias({"user_id"})
     private String userId;
 
-    protected Card(String id, String name, float damage, Element elementType, String packageId, String userId) {
+    @JsonAlias({"deck_id"})
+    private String deckId;
+
+    protected Card(String id, String name, float damage, Element elementType, String packageId, String userId, String deckId) {
         setId(id);
         setName(name);
         setDamage(damage);
         setElementType(elementType);
         setPackageId(packageId);
         setUserId(userId);
+        setDeckId(deckId);
     }
 
     public void setName(String name) {
