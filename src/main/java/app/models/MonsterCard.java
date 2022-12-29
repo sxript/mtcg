@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor
 public class MonsterCard extends Card {
-    public MonsterCard(String id, String name, int damage, Element elementType, String packageId) {
-        super(id , name, damage, elementType, packageId);
+    public MonsterCard(String id, String name, float damage, Element elementType, String packageId, String userId) {
+        super(id , name, damage, elementType, packageId, userId);
     }
 }

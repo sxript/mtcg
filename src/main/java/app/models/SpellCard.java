@@ -11,11 +11,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SpellCard extends Card {
 
-    public SpellCard(String id, String name, int damage, Element elementType, String packageId) {
-        super(id , name, damage, elementType, packageId);
+    public SpellCard(String id, String name, float damage, Element elementType, String packageId, String userId) {
+        super(id , name, damage, elementType, packageId, userId);
     }
 
-    public int damageEffectiveness(Element opponentElementType) {
+    public float damageEffectiveness(Element opponentElementType) {
         if(this.getElementType() == opponentElementType) return getDamage();
         else if(this.getElementType() == Element.FIRE && opponentElementType == Element.NORMAL
             || this.getElementType() == Element.WATER && opponentElementType == Element.FIRE

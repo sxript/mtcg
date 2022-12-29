@@ -11,6 +11,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class Profile {
+    // TODO: ADD ID
     @JsonAlias({"Bio"})
     private String bio;
 

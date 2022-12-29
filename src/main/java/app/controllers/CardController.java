@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.dao.CardDao;
+import app.dao.PackageDao;
 import app.exceptions.CustomJsonProcessingException;
 import app.models.*;
 import com.fasterxml.jackson.core.JsonParser;
@@ -31,6 +32,7 @@ public class CardController extends Controller {
         setCardDao(cardDao);
     }
 
+
     private Card parseCard(String rawCard) throws JsonProcessingException {
         JsonNode jsonNode = getObjectMapper().readTree(rawCard);
         if (!jsonNode.has("type")) {
@@ -58,7 +60,7 @@ public class CardController extends Controller {
                     card = parseCard(getObjectMapper().writeValueAsString(node));
                     Response response = createCard(card, packageId);
                     if (response.getStatusCode() < 200 && response.getStatusCode() > 299) {
-                        rollbackUserInsert(createdCards);
+                        rollbackUserInsert(createdCards, packageId);
                         throw new CustomJsonProcessingException("Card parsing failed");
                     }
                     createdCards.add(card.getId());
@@ -66,7 +68,7 @@ public class CardController extends Controller {
                 return new Response(
                         HttpStatus.CREATED,
                         ContentType.JSON,
-                        "{ \"message\": \"Card created successfully\", \"data\": \"" + getObjectMapper().writeValueAsString(createdCards) + "}"
+                        "{ \"message\": \"Created successfully\", \"data\": " + getObjectMapper().writeValueAsString(createdCards) + "}"
                 );
             }
 
@@ -104,10 +106,11 @@ public class CardController extends Controller {
         );
     }
 
-    private void rollbackUserInsert(ArrayList<String> userIds) {
+    private void rollbackUserInsert(ArrayList<String> userIds, String packageId) {
         for (String userId : userIds) {
             Optional<Card> optionalCard = cardDao.get(userId);
             optionalCard.ifPresent(card -> cardDao.delete(card));
         }
+        // TODO: SHOULD ALSO DELETE EMPTY PACKAGE
     }
 }

@@ -23,6 +23,7 @@ import java.util.Optional;
 @ToString
 public abstract class Card {
     @JsonAlias({"Id"})
+    //TODO: SET DEFAULT ID
     private String id;
 
     @JsonAlias({"Name"})
@@ -32,18 +33,21 @@ public abstract class Card {
     private float damage;
 
     @JsonAlias({"Element"})
-    // TODO: NO DEFAULT ANYMORE
     private Element elementType = Element.NORMAL;
 
     @JsonAlias({"package_id"})
     private String packageId;
 
-    protected Card(String id, String name, float damage, Element elementType, String packageId) {
+    @JsonAlias({"user_id"})
+    private String userId;
+
+    protected Card(String id, String name, float damage, Element elementType, String packageId, String userId) {
         setId(id);
         setName(name);
         setDamage(damage);
         setElementType(elementType);
         setPackageId(packageId);
+        setUserId(userId);
     }
 
     public void setName(String name) {

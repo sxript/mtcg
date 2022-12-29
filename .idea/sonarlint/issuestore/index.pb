@@ -15,8 +15,6 @@ P
  src/main/java/server/Server.java,4\c\4c405aa622276106ee9ef8c3a2fbee4e76dcafbb
 R
 "src/main/java/db/DBConnection.java,f\d\fd7336f68247f5ace91042607378ff616e4285dd
-Q
-!src/main/java/server/Request.java,5\5\55ca747494c299d261852a3dfe387458811247b3
 7
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
 [
@@ -27,5 +25,3 @@ M
 src/main/java/game/Arena.java,0\f\0ffa19805ac74b73481573f1a93618ac4818e230
 O
 src/main/java/game/Package.java,1\3\13501e46d3b218520100583345cece271bddfb0d
-W
-'src/main/java/server/ClientHandler.java,8\3\838442382de80c390f402c43e3d768a78d8bca8f

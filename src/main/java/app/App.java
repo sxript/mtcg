@@ -1,9 +1,6 @@
 package app;
 
-import app.controllers.CardController;
-import app.controllers.Controller;
-import app.controllers.PackageController;
-import app.controllers.UserController;
+import app.controllers.*;
 import app.dao.CardDao;
 import app.dao.PackageDao;
 import app.dao.UserDao;
@@ -22,11 +19,13 @@ public class App implements ServerApp {
     private UserController userController;
     private CardController cardController;
     private PackageController packageController;
+    private PackageCardUserController packageCardUserController;
 
     public App() {
         setUserController(new UserController(new UserDao()));
         setCardController(new CardController(new CardDao()));
         setPackageController(new PackageController(new PackageDao()));
+        setPackageCardUserController(new PackageCardUserController(new UserDao(), new PackageDao(), new CardDao()));
     }
 
     @Override
@@ -36,7 +35,7 @@ public class App implements ServerApp {
                 if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1) {
                     return getUserController().getUser(request.getPathParams().get(0));
                 } else if (request.getPathName().equals("/cards")) {
-                    System.out.println("GET USER CARDS");
+                    return getPackageCardUserController().getUserCards(request.getAuthorization());
                 } else if (request.getPathName().equals("/decks")) {
                     System.out.println("GET USER DECKS");
                 } else if (request.getPathName().equals("/stats")) {
@@ -57,7 +56,7 @@ public class App implements ServerApp {
                     String packageId = getPackageController().createPackage();
                     return getCardController().createCard(request.getBody(), packageId);
                 } else if (request.getPathName().equals("/transactions/packages")) {
-                    System.out.println("BUY A PACKAGE");
+                    return getPackageCardUserController().acquirePackage(request.getAuthorization());
                 } else if (request.getPathName().equals("/battles")) {
                     System.out.println("JOIN LOBBY");
                 } else if (request.getPathName().equals("/tradings")) {

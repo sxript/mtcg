@@ -15,6 +15,7 @@ public class Stats {
     private static final int START_WINS = 0;
     private static final int START_LOSSES = 0;
 
+    // TODO: ADD ID
 //    @JsonAlias({"id"})
 //    private String id;
 
