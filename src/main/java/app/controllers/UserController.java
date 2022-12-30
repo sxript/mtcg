@@ -2,7 +2,9 @@ package app.controllers;
 
 import app.dao.UserDao;
 import app.models.User;
+import app.service.TokenServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
@@ -10,12 +12,15 @@ import lombok.Getter;
 import lombok.Setter;
 import server.Response;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class UserController extends Controller {
     @Setter(AccessLevel.PRIVATE)
     @Getter(AccessLevel.PRIVATE)
     private UserDao userDao;
+
+    private TokenServiceImpl tokenService = new TokenServiceImpl();
 
     public UserController(UserDao userDao) {
        setUserDao(userDao);
@@ -66,10 +71,13 @@ public class UserController extends Controller {
     }
 
     // GET /users/:username
-    public Response getUser(String username) {
+    public Response getUser(User user, String username) {
         Optional<User> optionalUser = userDao.get(username);
 
-        // TODO: CHECK IF ADMING
+        if (user == null || (!Objects.equals(user.getUsername(), username) || !user.isAdmin())) {
+            return CommonErrors.TOKEN_ERROR;
+        }
+
         if(optionalUser.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
@@ -95,7 +103,11 @@ public class UserController extends Controller {
         }
     }
 
-    public Response updateUser(String username, String rawUser) {
+    public Response updateUser(User user, String username, String rawUser) {
+        if (user == null || (!Objects.equals(user.getUsername(), username) || !user.isAdmin())) {
+            return CommonErrors.TOKEN_ERROR;
+        }
+
         User updatedUser;
 
         try {
@@ -172,11 +184,11 @@ public class UserController extends Controller {
             );
         }
 
-        // TODO: LOGIN HANDLING HERE
+        String token = tokenService.generateAccessToken(user.getUsername());
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
-                "{ \"message\": \"User login successful\" }"
+                "{ \"message\": \"User login successful\", \"token\": \""+ token +"\"}"
         );
     }
 

@@ -3,6 +3,7 @@ package game;
 import app.App;
 import app.models.*;
 import db.DBConnection;
+import enums.Element;
 import server.Server;
 
 public class Main {
@@ -23,7 +24,13 @@ public class Main {
         App app = new App();
         Thread service = new Thread(new Server(app, 7777));
         service.start();
-        User user = new User("REAL NAME", "username", "secret", 90, new Stats(), new Profile("my bio", "link.to.image"));
+
+        Arena arena = new Arena();
+//        arena.battle("kienboec", "altenhof");
+//        Card c1 = new MonsterCard("rndId", "Kraken", 100, Element.FIRE, "", "", "");
+//        Card c2 = new MonsterCard("rndId", "KakaSpell", 100, Element.FIRE, "", "", "");
+//        arena.testCODE(c1, c2);
+//        arena.testCODE(c2, c1);
 
 //        UserDao userDao = new UserDao();
 //        userDao.save(user);

@@ -11,13 +11,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.UUID;
 
 public class UserDao implements Dao<User> {
     @Override
     public Optional<User> get(String username) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT "User".id, name, username, password, coins, elo, wins, losses, bio, image
+                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, "Profile".id, bio, image
                 FROM "User"
                 LEFT JOIN "Stats"
                 ON "User".id = "Stats".userid
@@ -29,23 +28,7 @@ public class UserDao implements Dao<User> {
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return Optional.of(new User(
-                        resultSet.getString(1),
-                        resultSet.getString(2),
-                        resultSet.getString(3),
-                        resultSet.getString(4),
-                        resultSet.getInt(5),
-                        new Stats(
-                                resultSet.getInt(6),
-                                resultSet.getInt(7),
-                                resultSet.getInt(8)
-                        ),
-                        new Profile(
-                                resultSet.getString(9),
-                                resultSet.getString(10)
-                        )
-
-                ));
+                return Optional.of(createUserWithResultSet(resultSet));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,7 +40,7 @@ public class UserDao implements Dao<User> {
     public Collection<User> getAll() {
         ArrayList<User> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, name, username, password, coins, elo, wins, losses, bio, image
+                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, "Profile".id, bio, image
                 FROM "User"
                 LEFT JOIN "Stats"
                 ON "User".id = "Stats".userid
@@ -67,21 +50,7 @@ public class UserDao implements Dao<User> {
         ) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                result.add(new User(
-                        resultSet.getString(1),
-                        resultSet.getString(2),
-                        resultSet.getString(4),
-                        resultSet.getString(6),
-                        resultSet.getInt(8),
-                        new Stats(
-                                resultSet.getInt(10),
-                                resultSet.getInt(12),
-                                resultSet.getInt(14)
-                        ),
-                        new Profile(
-                                resultSet.getString(16),
-                                resultSet.getString(18)
-                        )));
+                result.add(createUserWithResultSet(resultSet));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -118,13 +87,13 @@ public class UserDao implements Dao<User> {
             statement.setInt(4, user.getCoins());
 
             // Insert Into Stats
-            statement.setString(5, UUID.randomUUID().toString());
+            statement.setString(5, userStats.getId());
             statement.setInt(6, userStats.getElo());
             statement.setInt(7, userStats.getWins());
             statement.setInt(8, userStats.getLosses());
 
             // Insert Into Profile
-            statement.setString(9, UUID.randomUUID().toString());
+            statement.setString(9, profile.getId());
             statement.setString(10, profile.getBio());
             statement.setString(11, profile.getImage());
 
@@ -143,7 +112,7 @@ public class UserDao implements Dao<User> {
 
     @Override
     public void update(User user, User updatedUser) {
-        try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+        try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 WITH update_user as (
                     UPDATE "User"
                     SET name = ?, username = ?, password = ?, coins = ?
@@ -198,5 +167,28 @@ public class UserDao implements Dao<User> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private User createUserWithResultSet(ResultSet resultSet) throws SQLException {
+        return new User(
+                resultSet.getString(1),
+                resultSet.getString(2),
+                resultSet.getString(3),
+                resultSet.getString(4),
+                resultSet.getInt(5),
+                new Stats(
+                        resultSet.getString(6),
+                        resultSet.getInt(7),
+                        resultSet.getInt(8),
+                        resultSet.getInt(9),
+                        resultSet.getString(1)
+                ),
+                new Profile(
+                        resultSet.getString(10),
+                        resultSet.getString(11),
+                        resultSet.getString(12),
+                        resultSet.getString(1)
+                )
+        );
     }
 }

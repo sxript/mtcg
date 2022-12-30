@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.Element;
+import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
@@ -17,9 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 import server.Response;
 
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -50,7 +49,11 @@ public class CardController extends Controller {
     }
 
     // TODO: DOES THIS MATCH THE RIGHT STATUS CODES
-    public Response createCard(String rawCard, String packageId) {
+    public Response createCard(User user, String rawCard, String packageId) {
+        if(user == null || !user.isAdmin()) {
+            return CommonErrors.TOKEN_ERROR;
+        }
+
         Card card;
 
         try {

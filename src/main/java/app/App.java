@@ -1,10 +1,9 @@
 package app;
 
 import app.controllers.*;
-import app.dao.CardDao;
-import app.dao.DeckDao;
-import app.dao.PackageDao;
-import app.dao.UserDao;
+import app.dao.*;
+import app.models.User;
+import app.service.TokenServiceImpl;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
@@ -14,6 +13,8 @@ import server.Request;
 import server.Response;
 import server.ServerApp;
 
+import java.util.Optional;
+
 @Setter(AccessLevel.PRIVATE)
 @Getter(AccessLevel.PRIVATE)
 public class App implements ServerApp {
@@ -21,28 +22,36 @@ public class App implements ServerApp {
     private CardController cardController;
     private PackageController packageController;
     private PackageCardUserController packageCardUserController;
+    private StatsController statsController;
+
+    private TokenServiceImpl tokenService = new TokenServiceImpl();
 
     public App() {
         setUserController(new UserController(new UserDao()));
         setCardController(new CardController(new CardDao()));
         setPackageController(new PackageController(new PackageDao()));
         setPackageCardUserController(new PackageCardUserController(new UserDao(), new PackageDao(), new CardDao(), new DeckDao()));
+        setStatsController(new StatsController(new StatsDao()));
     }
+
+    // TODO: THERE ARE ADMIN ROUTES
+    // E.g. /users/username a normal user can only check their own name but an admin could check all
 
     @Override
     public Response handleRequest(Request request) {
+        User user = tokenService.authenticateToken(request.getAuthorization());
         switch (request.getMethod()) {
             case GET: {
-                if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1) {
-                    return getUserController().getUser(request.getPathParams().get(0));
+                if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1 && user != null) {
+                    return getUserController().getUser(user, request.getPathParams().get(0));
                 } else if (request.getPathName().equals("/cards")) {
-                    return getPackageCardUserController().getUserCards(request.getAuthorization());
+                    return getPackageCardUserController().getUserCards(user);
                 } else if (request.getPathName().equals("/decks")) {
-                    System.out.println("GET USER DECKS");
+                    return getPackageCardUserController().getDeck(user);
                 } else if (request.getPathName().equals("/stats")) {
-                    System.out.println("GET USER STATS");
+                    return getStatsController().getStats(user);
                 } else if (request.getPathName().equals("/scores")) {
-                    System.out.println("GET SCORES");
+                    return getStatsController().getScoreboard();
                 } else if (request.getPathName().equals("/tradings")) {
                     System.out.println("GET TRADING DEALS");
                 }
@@ -54,10 +63,11 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/sessions")) {
                     return getUserController().loginUser(request.getBody());
                 } else if (request.getPathName().equals("/packages")) {
+                    // TODO: REFACTOR no logic in here
                     String packageId = getPackageController().createPackage();
-                    return getCardController().createCard(request.getBody(), packageId);
+                    return getCardController().createCard(user, request.getBody(), packageId);
                 } else if (request.getPathName().equals("/transactions/packages")) {
-                    return getPackageCardUserController().acquirePackage(request.getAuthorization());
+                    return getPackageCardUserController().acquirePackage(user);
                 } else if (request.getPathName().equals("/battles")) {
                     System.out.println("JOIN LOBBY");
                 } else if (request.getPathName().equals("/tradings")) {
@@ -69,9 +79,9 @@ public class App implements ServerApp {
             }
             case PUT:
                 if (request.getBasePath().equals("/users") && request.getPathParams().size() == 1) {
-                    return getUserController().updateUser(request.getPathParams().get(0), request.getBody());
+                    return getUserController().updateUser(user, request.getPathParams().get(0), request.getBody());
                 }  else if (request.getPathName().equals("/decks")) {
-                    return getPackageCardUserController().setUserDeck(request.getAuthorization(), request.getBody());
+                    return getPackageCardUserController().setUserDeck(user, request.getBody());
                 }
                 break;
             case DELETE: {

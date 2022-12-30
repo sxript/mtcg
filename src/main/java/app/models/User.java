@@ -3,7 +3,6 @@ package app.models;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,36 +15,38 @@ public class User {
     private static final int START_COINS = 20;
 
     @JsonAlias({"id"})
-    String id = UUID.randomUUID().toString();
+    private String id = UUID.randomUUID().toString();
 
     @JsonAlias({"Name"})
-    String name;
+    private String name;
 
     @JsonAlias({"Username"})
-    String username;
+    private String username;
 
     @JsonAlias({"Password"})
-    String password;
+    private String password;
 
     @JsonAlias({"Coins"})
     @JsonSetter(nulls = Nulls.SKIP)
-    int coins = START_COINS;
+    private int coins = START_COINS;
 
     @JsonAlias({"Stack"})
-    List<String> stack;
+    private List<String> stack;
 
     @JsonAlias({"Deck"})
-    Deck deck;
+    private Deck deck;
 
     // TODO: DELETE STATS AND PROFILE THESE DO NOT BELONG HERE
     @JsonAlias({"Stats"})
     @JsonSetter(nulls = Nulls.SKIP)
     @JsonUnwrapped
-    Stats stats = new Stats();
+    private Stats stats = new Stats();
 
     @JsonAlias({"Profile"})
     @JsonUnwrapped
-    Profile profile;
+    private Profile profile;
+
+    private boolean isAdmin = false;
 
     public User(String id, String name, String username, String password, Integer coins, Stats stats, Profile profile) {
         setId(id);

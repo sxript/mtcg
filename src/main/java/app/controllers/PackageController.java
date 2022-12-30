@@ -16,7 +16,6 @@ public class PackageController {
        setPackageDao(packageDao);
     }
 
-
     // TODO: ADMIN CHECK
     public String createPackage() {
         Package p = new Package();

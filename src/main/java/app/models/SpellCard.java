@@ -15,6 +15,11 @@ public class SpellCard extends Card {
         super(id , name, damage, elementType, packageId, userId, deckId);
     }
 
+    public SpellCard(Card card) {
+        this(card.getId(), card.getName(), card.getDamage(), card.getElementType(), card.getPackageId(), card.getUserId(), card.getDeckId());
+    }
+
+    // TODO: TAKE THIS OUT
     public float damageEffectiveness(Element opponentElementType) {
         if(this.getElementType() == opponentElementType) return getDamage();
         else if(this.getElementType() == Element.FIRE && opponentElementType == Element.NORMAL

@@ -54,6 +54,16 @@ public abstract class Card {
         setDeckId(deckId);
     }
 
+    protected Card(Card card) {
+        setId(card.getId());
+        setName(card.getName());
+        setDamage(card.getDamage());
+        setElementType(card.getElementType());
+        setPackageId(card.getPackageId());
+        setUserId(card.getUserId());
+        setDeckId(card.getDeckId());
+    }
+
     public void setName(String name) {
         Optional<Element> optionalElement = Arrays.stream(Element.values()).filter(element -> name.toUpperCase(Locale.ROOT).contains(element.name())).findAny();
         optionalElement.ifPresent(this::setElementType);

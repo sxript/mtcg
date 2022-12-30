@@ -9,6 +9,7 @@ import app.models.*;
 import app.models.Package;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
@@ -33,25 +34,58 @@ public class PackageCardUserController extends Controller {
         setDeckDao(deckDao);
     }
 
-    // PUT /decks
-    public Response setUserDeck(String username, String deckJSON) {
-        Optional<User> optionalUser = userDao.get(username);
+    // GET /decks
+    // TODO: REFACTOR ALL CONTROLLERS TO USE GET METHOD FOR DAO
+    public Response getDeck(User user) {
+        if(user == null) {
+            return CommonErrors.TOKEN_ERROR;
+        }
+
+        Optional<Deck> optionalDeck = getDeckDao().getByUserId(user.getId());
+
+        Deck deck = new Deck(user.getId());
+        if (optionalDeck.isPresent()) {
+            deck = optionalDeck.get();
+        }
+
+        Collection<Card> cardDeck = getCardDao().getAllByPackageUserDeckId(null, null, deck.getId());
         try {
-            if (optionalUser.isEmpty()) {
+            if (cardDeck.isEmpty()) {
                 return new Response(
-                        HttpStatus.UNAUTHORIZED,
+                        HttpStatus.NO_CONTENT,
                         ContentType.JSON,
-                        "{ \"error\": \"Access token is missing or invalid\" }"
+                        "{ \"message\": \"Deck is empty\", \"data\": " + getObjectMapper().writeValueAsString(cardDeck) + "}"
                 );
             }
-            User user = optionalUser.get();
+            return new Response(
+                    HttpStatus.OK,
+                    ContentType.JSON,
+                    "{ \"message\": \"Deck found\", \"data\": " + getObjectMapper().writeValueAsString(cardDeck) + "}"
+            );
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong\" }"
+            );
+        }
+    }
+
+    // PUT /decks
+    public Response setUserDeck(User user, String deckJSON) {
+        // TODO: REFACTOR THIS CLASS THAT PROVIDES TWO STATIC METHODS ONE FOR ONLY USER CHECK LIKE THIS AND ONE INCLUDING ADMIN CHECK
+        if (user == null) {
+            return CommonErrors.TOKEN_ERROR;
+        }
+        try {
             JsonNode jsonNode = getObjectMapper().readTree(deckJSON);
             if (!jsonNode.isArray()) throw new CustomJsonProcessingException("No array Provided");
             if (jsonNode.size() != Deck.DECK_SIZE) {
                 return new Response(
                         HttpStatus.BAD_REQUEST,
                         ContentType.JSON,
-                        "{ \"error\": \"Deck must consist of " + Deck.DECK_SIZE + "Cards\", \"data\": " + deckJSON + " }"
+                        "{ \"error\": \"Deck must consist of " + Deck.DECK_SIZE + " Cards\", \"data\": " + deckJSON + " }"
                 );
             }
 
@@ -78,13 +112,7 @@ public class PackageCardUserController extends Controller {
             for (JsonNode node : jsonNode) {
                 String cardId = node.asText();
                 Response response = setUserCard(user, deck, cardId);
-                System.out.println(response.getStatusCode());
                 if (response.getStatusCode() < 200 || response.getStatusCode() > 299) {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     rollbackUserDeck(tempDeck, cardsAddedToDeck, cardsInDeckBeforeTx);
                     return response;
                 }
@@ -129,7 +157,6 @@ public class PackageCardUserController extends Controller {
                 "{ \"error\": \"At least one of the provided cards does not belong to the user or is not available\" }"
         );
         if (optionalCard.isEmpty()) {
-            System.out.println("I JUST RETURREND TO YOU IDIOT");
             return forbidden;
         }
 
@@ -149,18 +176,12 @@ public class PackageCardUserController extends Controller {
         );
     }
 
-    // TODO: IMPLEMENT PROPER AUTH HANDLING;
     // GET /cards
-    public Response getUserCards(String authToken) {
-        Optional<User> optionalUser = userDao.get(authToken);
-        if (optionalUser.isEmpty()) {
-            return new Response(
-                    HttpStatus.UNAUTHORIZED,
-                    ContentType.JSON,
-                    "{ \"error\": \"Access token is missing or invalid\"}"
-            );
+    public Response getUserCards(User user) {
+        if (user == null) {
+            return CommonErrors.TOKEN_ERROR;
         }
-        User user = optionalUser.get();
+
         Collection<Card> cards = cardDao.getAllByPackageUserDeckId(null, user.getId(), null);
         if (cards.isEmpty()) {
             return new Response(
@@ -177,24 +198,17 @@ public class PackageCardUserController extends Controller {
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong\"}"
+            );
         }
-
-        return new Response(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ContentType.JSON,
-                "{ \"error\": \"Something went wrong\"}"
-        );
     }
 
-    // TODO: REFACTOR TO REALLY USE TOKEN THIS WILL NOW ONLY USE PREDEFINED VALUE
-    public Response acquirePackage(String token) {
-        Optional<User> optionalUser = userDao.get(token);
-        if (optionalUser.isEmpty()) {
-            return new Response(
-                    HttpStatus.UNAUTHORIZED,
-                    ContentType.JSON,
-                    "{ \"error\": \" User not found \"}"
-            );
+    public Response acquirePackage(User user) {
+        if (user == null) {
+            return CommonErrors.TOKEN_ERROR;
         }
 
         Optional<Package> optionalPackage = packageDao.getFirst();
@@ -206,7 +220,6 @@ public class PackageCardUserController extends Controller {
             );
         }
 
-        User user = optionalUser.get();
         Package aPackage = optionalPackage.get();
         String packageId = aPackage.getId();
 
@@ -220,6 +233,7 @@ public class PackageCardUserController extends Controller {
 
         // TODO: HANDLE DELETE ERRORS AND OVERALL MAKE IT POSSIBLE TO HANDLE IN CONTROLLER
         // TODO: IF DELETE FAILED UNDO THE DELETE
+        // TODO: ON ROLLBACK GIVE BACK COINS
         Collection<Card> cards = cardDao.getAllByPackageUserDeckId(packageId, null, null);
         packageDao.delete(aPackage);
         user.setCoins(user.getCoins() - aPackage.getPrice());

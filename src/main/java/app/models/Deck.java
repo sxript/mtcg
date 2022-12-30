@@ -2,10 +2,7 @@ package app.models;
 
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -13,6 +10,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class Deck {
     public static final int DECK_SIZE = 4;
 
