@@ -19,7 +19,7 @@ public class Request {
     private List<String> pathParams;
     private String basePath;
     private String contentType;
-    private Integer contentLength;
+    private Integer contentLength = 0;
     private String authorization;
     private String body = "";
 

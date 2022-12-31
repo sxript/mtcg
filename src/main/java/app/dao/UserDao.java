@@ -16,7 +16,7 @@ public class UserDao implements Dao<User> {
     @Override
     public Optional<User> get(String username) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, "Profile".id, bio, image
+                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, draws, "Profile".id, bio, image
                 FROM "User"
                 LEFT JOIN "Stats"
                 ON "User".id = "Stats".userid
@@ -40,7 +40,7 @@ public class UserDao implements Dao<User> {
     public Collection<User> getAll() {
         ArrayList<User> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, "Profile".id, bio, image
+                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, draws, "Profile".id, bio, image
                 FROM "User"
                 LEFT JOIN "Stats"
                 ON "User".id = "Stats".userid
@@ -71,8 +71,8 @@ public class UserDao implements Dao<User> {
                     RETURNING id as userid
                 ), stats_insert AS (
                     INSERT INTO "Stats"
-                    (id, elo, wins, losses, userid)
-                    VALUES (?, ?, ?, ?, (select * from "user_insert"))
+                    (id, elo, wins, losses, draws, userid)
+                    VALUES (?, ?, ?, ?, ?, (select * from "user_insert"))
                     RETURNING userid
                 )
                 INSERT INTO "Profile"
@@ -91,11 +91,12 @@ public class UserDao implements Dao<User> {
             statement.setInt(6, userStats.getElo());
             statement.setInt(7, userStats.getWins());
             statement.setInt(8, userStats.getLosses());
+            statement.setInt(9, userStats.getDraws());
 
             // Insert Into Profile
-            statement.setString(9, profile.getId());
-            statement.setString(10, profile.getBio());
-            statement.setString(11, profile.getImage());
+            statement.setString(10, profile.getId());
+            statement.setString(11, profile.getBio());
+            statement.setString(12, profile.getImage());
 
             // Execute Query
             // TODO: EXECUTE UPDATE
@@ -120,7 +121,7 @@ public class UserDao implements Dao<User> {
                     RETURNING id as userid
                 ), update_stats as (
                     UPDATE "Stats"
-                    SET elo = ?, wins = ?, losses = ?
+                    SET elo = ?, wins = ?, losses = ?, draws = ?
                     WHERE userid = (select * from "update_user")
                     RETURNING userid
                 )
@@ -143,11 +144,12 @@ public class UserDao implements Dao<User> {
             statement.setInt(6, updatedStats.getElo());
             statement.setInt(7, updatedStats.getWins());
             statement.setInt(8, updatedStats.getLosses());
+            statement.setInt(9, updatedStats.getDraws());
 
             // UPDATE PROFILE
             Profile updatedProfile = updatedUser.getProfile();
-            statement.setString(9, updatedProfile.getBio());
-            statement.setString(10, updatedProfile.getImage());
+            statement.setString(10, updatedProfile.getBio());
+            statement.setString(11, updatedProfile.getImage());
 
             statement.execute();
         } catch (SQLException e) {
@@ -181,12 +183,13 @@ public class UserDao implements Dao<User> {
                         resultSet.getInt(7),
                         resultSet.getInt(8),
                         resultSet.getInt(9),
+                        resultSet.getInt(10),
                         resultSet.getString(1)
                 ),
                 new Profile(
-                        resultSet.getString(10),
                         resultSet.getString(11),
                         resultSet.getString(12),
+                        resultSet.getString(13),
                         resultSet.getString(1)
                 )
         );

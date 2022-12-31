@@ -3,7 +3,6 @@ package game;
 import app.models.*;
 import app.service.PlayerServiceImpl;
 import enums.Element;
-import factories.CardFactory;
 import helper.Tuple;
 
 import java.util.*;
@@ -14,6 +13,7 @@ public class Arena {
     PlayerServiceImpl playerService = new PlayerServiceImpl();
     // TODO: ADDING CARDS TO DECK THINK ABOU DUPLICATE CAN I ADD THE SAME CARD MORE THAN ONCE
 
+    // TODO: CHECK IF DECK HAS 4 Cards in it
     public void battle(String username1, String username2) {
         String winnerId = null;
 

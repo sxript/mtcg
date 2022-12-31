@@ -1,6 +1,7 @@
 package server;
 
 import app.App;
+import game.GameQueue;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;

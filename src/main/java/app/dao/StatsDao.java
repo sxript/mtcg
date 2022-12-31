@@ -77,6 +77,6 @@ public class StatsDao implements Dao<Stats> {
                 resultSet.getInt(4),
                 resultSet.getInt(5),
                 resultSet.getString(6)
-        ));
+        );
     }
 }

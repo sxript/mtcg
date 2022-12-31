@@ -29,7 +29,7 @@ public class TokenServiceImpl implements TokenService {
         User user = null;
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
-            // This code is not that good but according to specification an admin is someone with the token
+            // This code is not good but according to specification an admin is someone with the token
             // admin-mtcgToken
             if (Objects.equals(username, "admin")) {
                 user.setAdmin(true);
@@ -40,6 +40,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String parseAccessToken(String token) {
+        // TODO: CHECK IF EQUALS -mtcgToken
         return token == null ? "" : token.split("-")[0];
     }
 

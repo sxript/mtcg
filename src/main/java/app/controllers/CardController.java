@@ -1,15 +1,11 @@
 package app.controllers;
 
 import app.dao.CardDao;
-import app.dao.PackageDao;
 import app.exceptions.CustomJsonProcessingException;
 import app.models.*;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import enums.Element;
 import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
@@ -18,9 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import server.Response;
 
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 public class CardController extends Controller {
     @Setter(AccessLevel.PRIVATE)
