@@ -20,7 +20,7 @@ public class UserController extends Controller {
     @Getter(AccessLevel.PRIVATE)
     private UserDao userDao;
 
-    private TokenServiceImpl tokenService = new TokenServiceImpl();
+    private final TokenServiceImpl tokenService = new TokenServiceImpl();
 
     public UserController(UserDao userDao) {
        setUserDao(userDao);

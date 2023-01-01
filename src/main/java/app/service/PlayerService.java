@@ -1,9 +1,6 @@
 package app.service;
 
-import app.models.Card;
-import app.models.Deck;
-import app.models.Stats;
-import app.models.User;
+import app.models.*;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -15,6 +12,8 @@ public interface PlayerService {
 
     Collection<Stats> findAllStatsSorted();
 
+    Collection<Trade> findAllTrades();
+
     Collection<Card> findCardsByDeckId(String deckId);
 
     Collection<Card> findPackageByPackageId(String packageId);
@@ -23,7 +22,13 @@ public interface PlayerService {
 
     Optional<Card> findCardById(String id);
 
+    Optional<Trade> findTradeById(String id);
+
     Optional<Deck> findDeckByUserId(String userId);
 
     void updateCard(Card oldCard, Card newCard);
+
+    void createTrade(Trade trade);
+
+    void deleteTrade(Trade trade);
 }

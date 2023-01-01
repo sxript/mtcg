@@ -1,10 +1,9 @@
 package app.dao;
 
 import app.models.*;
-import app.models.Package;
 import db.DBConnection;
 import enums.Element;
-import enums.Type;
+import enums.CardType;
 import factories.CardFactory;
 
 import java.sql.PreparedStatement;
@@ -64,7 +63,7 @@ public class CardDao implements Dao<Card> {
     }
 
     private Card createCardFromResultSet(ResultSet resultSet) throws SQLException {
-        Card card = cardFactory.create(resultSet.getString(2).toLowerCase(Locale.ROOT).contains("spell") ? Type.SPELL : Type.MONSTER);
+        Card card = cardFactory.create(resultSet.getString(2).toLowerCase(Locale.ROOT).contains("spell") ? CardType.SPELL : CardType.MONSTER);
         card.setId(resultSet.getString(1));
         card.setName(resultSet.getString(2));
         card.setDamage(resultSet.getFloat(3));

@@ -1,6 +1,5 @@
 package app.dao;
 
-import app.models.*;
 import app.models.Package;
 import db.DBConnection;
 

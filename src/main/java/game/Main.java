@@ -24,7 +24,7 @@ public class Main {
         DBConnection db = DBConnection.getInstance();
         db.getConnection();
 
-        App app = new App(new GameQueue());
+        App app = new App();
         Thread service = new Thread(new Server(app, 7777));
         service.start();
 

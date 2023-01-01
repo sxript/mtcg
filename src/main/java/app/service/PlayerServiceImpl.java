@@ -1,10 +1,7 @@
 package app.service;
 
 import app.dao.*;
-import app.models.Card;
-import app.models.Deck;
-import app.models.Stats;
-import app.models.User;
+import app.models.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,16 +16,19 @@ public class PlayerServiceImpl implements  PlayerService {
     private final PackageDao packageDao;
     private final StatsDao statsDao;
     private final DeckDao deckDao;
+    private final TradeDao tradeDao;
 
-    public PlayerServiceImpl(UserDao userDao, CardDao cardDao, PackageDao packageDao, StatsDao statsDao, DeckDao deckDao) {
+    public PlayerServiceImpl(UserDao userDao, CardDao cardDao, PackageDao packageDao, StatsDao statsDao, DeckDao deckDao, TradeDao tradeDao) {
         this.userDao = userDao;
         this.cardDao = cardDao;
         this.packageDao = packageDao;
         this.statsDao = statsDao;
         this.deckDao = deckDao;
+        this.tradeDao = tradeDao;
     }
+
     public PlayerServiceImpl() {
-        this(new UserDao(), new CardDao(), new PackageDao(), new StatsDao(), new DeckDao());
+        this(new UserDao(), new CardDao(), new PackageDao(), new StatsDao(), new DeckDao(), new TradeDao());
     }
 
     @Override
@@ -46,6 +46,11 @@ public class PlayerServiceImpl implements  PlayerService {
         // TODO: REWRITE TO RETURN WITH NAME?
         // MAYBE CREATE A SCOREBOARD STATS MODEL
         return statsDao.getAll();
+    }
+
+    @Override
+    public Collection<Trade> findAllTrades() {
+        return tradeDao.getAll();
     }
 
     @Override
@@ -69,6 +74,11 @@ public class PlayerServiceImpl implements  PlayerService {
     }
 
     @Override
+    public Optional<Trade> findTradeById(String id) {
+        return getTradeDao().get(id);
+    }
+
+    @Override
     public Optional<Deck> findDeckByUserId(String userId) {
         return getDeckDao().getByUserId(userId);
     }
@@ -76,5 +86,15 @@ public class PlayerServiceImpl implements  PlayerService {
     @Override
     public void updateCard(Card oldCard, Card newCard) {
        cardDao.update(oldCard, newCard);
+    }
+
+    @Override
+    public void createTrade(Trade trade) {
+        tradeDao.save(trade);
+    }
+
+    @Override
+    public void deleteTrade(Trade trade) {
+        tradeDao.delete(trade);
     }
 }

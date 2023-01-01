@@ -26,21 +26,18 @@ public class App implements ServerApp {
     private PackageCardUserController packageCardUserController;
     private StatsController statsController;
     private BattleController battleController;
+    private TradeController tradeController;
 
     private TokenServiceImpl tokenService = new TokenServiceImpl();
 
-    @Setter
-    @Getter
-    private GameQueue gameQueue;
-
-    public App(GameQueue gameQueue) {
+    public App() {
         setUserController(new UserController(new UserDao()));
         setCardController(new CardController(new CardDao()));
         setPackageController(new PackageController(new PackageDao()));
         setPackageCardUserController(new PackageCardUserController(new UserDao(), new PackageDao(), new CardDao(), new DeckDao()));
         setStatsController(new StatsController(new StatsDao()));
         setBattleController(new BattleController());
-        setGameQueue(gameQueue);
+        setTradeController(new TradeController());
     }
 
     @Override
@@ -59,7 +56,7 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/scores")) {
                     return getStatsController().getScoreboard();
                 } else if (request.getPathName().equals("/tradings")) {
-                    System.out.println("GET TRADING DEALS");
+                    return getTradeController().getAllTrades(user);
                 }
                 break;
             }
@@ -75,11 +72,11 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/transactions/packages")) {
                     return getPackageCardUserController().acquirePackage(user);
                 } else if (request.getPathName().equals("/battles")) {
-                   return battleController.battle(user);
+                   return getBattleController().battle(user);
                 } else if (request.getPathName().equals("/tradings")) {
-                    System.out.println("CREATE TRADING DEAL");
+                    return getTradeController().createTrade(user, request.getBody());
                 } else if (request.getBasePath().equals("/tradings") && request.getPathParams().size() == 1) {
-                    System.out.println("CREATE A TRADE WITH EXISTING");
+                    return getTradeController().completeTrade(user, request.getPathParams().get(0), request.getBody());
                 }
                 break;
             }
@@ -92,7 +89,7 @@ public class App implements ServerApp {
                 break;
             case DELETE: {
                 if (request.getBasePath().equals("/tradings") && request.getPathParams().size() == 1) {
-                    System.out.println("DELETE A TRADING DEAL");
+                    return getTradeController().deleteTrade(user, request.getPathParams().get(0));
                 }
                 break;
             }
