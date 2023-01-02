@@ -36,6 +36,28 @@ public class UserDao implements Dao<User> {
         return Optional.empty();
     }
 
+    public Optional<User> getById(String id) {
+        try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+                SELECT "User".id, name, username, password, coins, "Stats".id, elo, wins, losses, draws, "Profile".id, bio, image
+                FROM "User"
+                LEFT JOIN "Stats"
+                ON "User".id = "Stats".userid
+                LEFT JOIN "Profile"
+                ON "User".id = "Profile".userid
+                WHERE "User".id=?
+                """)
+        ) {
+            statement.setString(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return Optional.of(createUserWithResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
     @Override
     public Collection<User> getAll() {
         ArrayList<User> result = new ArrayList<>();

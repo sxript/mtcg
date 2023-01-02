@@ -48,10 +48,6 @@ public class PlayerServiceImpl implements  PlayerService {
         return statsDao.getAll();
     }
 
-    @Override
-    public Collection<Trade> findAllTrades() {
-        return tradeDao.getAll();
-    }
 
     @Override
     public Collection<Card> findCardsByDeckId(String deckId) {
@@ -74,11 +70,6 @@ public class PlayerServiceImpl implements  PlayerService {
     }
 
     @Override
-    public Optional<Trade> findTradeById(String id) {
-        return getTradeDao().get(id);
-    }
-
-    @Override
     public Optional<Deck> findDeckByUserId(String userId) {
         return getDeckDao().getByUserId(userId);
     }
@@ -93,13 +84,4 @@ public class PlayerServiceImpl implements  PlayerService {
        cardDao.update(oldCard, newCard);
     }
 
-    @Override
-    public void createTrade(Trade trade) {
-        tradeDao.save(trade);
-    }
-
-    @Override
-    public void deleteTrade(Trade trade) {
-        tradeDao.delete(trade);
-    }
 }

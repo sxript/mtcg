@@ -1,8 +1,8 @@
 package app.controllers;
 
-import app.dao.UserDao;
 import app.models.User;
 import app.service.TokenServiceImpl;
+import app.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import helper.CommonErrors;
 import http.ContentType;
@@ -18,12 +18,11 @@ import java.util.Optional;
 public class UserController extends Controller {
     @Setter(AccessLevel.PRIVATE)
     @Getter(AccessLevel.PRIVATE)
-    private UserDao userDao;
-
+    private UserService userService;
     private final TokenServiceImpl tokenService = new TokenServiceImpl();
 
-    public UserController(UserDao userDao) {
-       setUserDao(userDao);
+    public UserController(UserService userService) {
+        setUserService(userService);
     }
 
     public Response createUser(String rawUser) {
@@ -53,7 +52,7 @@ public class UserController extends Controller {
 
     // POST /users
     private Response createUser(User user) {
-        Optional<User> optionalUser = userDao.get(user.getUsername());
+        Optional<User> optionalUser = userService.getUserByUsername(user.getUsername());
         if(optionalUser.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -62,7 +61,7 @@ public class UserController extends Controller {
             );
         }
 
-        userDao.save(user);
+        userService.saveUser(user);
         return new Response(
                 HttpStatus.CREATED,
                 ContentType.JSON,
@@ -72,7 +71,7 @@ public class UserController extends Controller {
 
     // GET /users/:username
     public Response getUser(User user, String username) {
-        Optional<User> optionalUser = userDao.get(username);
+        Optional<User> optionalUser = userService.getUserByUsername(username);
 
         if (user == null || (!Objects.equals(user.getUsername(), username) && !user.isAdmin())) {
             return CommonErrors.TOKEN_ERROR;
@@ -126,9 +125,8 @@ public class UserController extends Controller {
 
     // PUT /users/:username
     private Response updateUser(String username, User updatedUser) {
-        Optional<User> optionalUser = userDao.get(username);
+        Optional<User> optionalUser = userService.getUserByUsername(username);
 
-        // TODO: CHECK IF ADMING
         if(optionalUser.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
@@ -140,7 +138,7 @@ public class UserController extends Controller {
         user.setName(updatedUser.getName());
         user.getProfile().setBio(updatedUser.getProfile().getBio());
         user.getProfile().setImage(updatedUser.getProfile().getImage());
-        userDao.update(new User(username, ""), user);
+        userService.updateUser(new User(username, ""), user);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -175,7 +173,7 @@ public class UserController extends Controller {
 
     // POST /users
     private Response loginUser(User user) {
-        Optional<User> optionalUser = userDao.get(user.getUsername());
+        Optional<User> optionalUser = userService.getUserByUsername(user.getUsername());
         if(optionalUser.isEmpty() || !optionalUser.get().getPassword().equals(user.getPassword())) {
             return new Response(
                     HttpStatus.UNAUTHORIZED,

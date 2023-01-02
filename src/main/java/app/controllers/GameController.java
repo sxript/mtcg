@@ -3,6 +3,8 @@ package app.controllers;
 import app.dao.StatsDao;
 import app.models.Stats;
 import app.models.User;
+import app.service.GameService;
+import app.service.GameServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import helper.CommonErrors;
 import http.ContentType;
@@ -15,13 +17,17 @@ import server.Response;
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class StatsController extends Controller {
+public class GameController extends Controller {
     @Setter(AccessLevel.PRIVATE)
     @Getter(AccessLevel.PRIVATE)
-    private StatsDao statsDao;
+    private final GameService gameService;
 
-    public StatsController (StatsDao statsDao) {
-        setStatsDao(statsDao);
+    public GameController(GameService gameService) {
+        this.gameService = gameService;
+    }
+
+    public GameController() {
+        this(new GameServiceImpl());
     }
 
     // GET /stats

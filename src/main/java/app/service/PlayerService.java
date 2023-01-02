@@ -12,8 +12,6 @@ public interface PlayerService {
 
     Collection<Stats> findAllStatsSorted();
 
-    Collection<Trade> findAllTrades();
-
     Collection<Card> findCardsByDeckId(String deckId);
 
     Collection<Card> findPackageByPackageId(String packageId);
@@ -22,15 +20,10 @@ public interface PlayerService {
 
     Optional<Card> findCardById(String id);
 
-    Optional<Trade> findTradeById(String id);
 
     Optional<Deck> findDeckByUserId(String userId);
 
     void updateUser(User oldUser, User updatedUser);
 
     void updateCard(Card oldCard, Card newCard);
-
-    void createTrade(Trade trade);
-
-    void deleteTrade(Trade trade);
 }

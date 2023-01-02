@@ -4,12 +4,14 @@ import app.models.Card;
 import app.models.MonsterCard;
 import app.models.Trade;
 import app.models.User;
-import app.service.PlayerService;
-import app.service.PlayerServiceImpl;
+import app.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import server.Response;
 
 import java.util.Collection;
@@ -18,8 +20,19 @@ import java.util.Objects;
 import java.util.Optional;
 
 
-public class TradeController extends Controller {
-    PlayerService playerService = new PlayerServiceImpl();
+public class TradingContoller extends Controller {
+    @Setter(AccessLevel.PRIVATE)
+    @Getter(AccessLevel.PRIVATE)
+    private PlayerService playerService = new PlayerServiceImpl();
+    private final TradingService tradingService;
+
+    public TradingContoller(TradingService tradingService) {
+        this.tradingService = tradingService;
+    }
+
+    public TradingContoller() {
+        this(new TradingServiceImpl());
+    }
 
     // GET /tradings
     public Response getAllTrades(User user) {
@@ -27,7 +40,7 @@ public class TradeController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Collection<Trade> trades = playerService.findAllTrades();
+        Collection<Trade> trades = tradingService.findAllTrades();
         if (trades.isEmpty()) {
             return new Response(
                     HttpStatus.NO_CONTENT,
@@ -58,7 +71,7 @@ public class TradeController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Trade> optionalTrade = playerService.findTradeById(tradeId);
+        Optional<Trade> optionalTrade = tradingService.findTradeById(tradeId);
 
         if (optionalTrade.isEmpty()) {
             return new Response(
@@ -96,7 +109,7 @@ public class TradeController extends Controller {
         }
 
         // TODO: WHAT IF TRADE NOT HERE ANYMORE?
-        playerService.deleteTrade(trade);
+        tradingService.deleteTrade(trade);
 
         Card cardFromTradeUpdated = new MonsterCard(cardFromTrade);
         Card cardToTradeUpdated = new MonsterCard(cardToTrade);
@@ -119,7 +132,7 @@ public class TradeController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Trade> optionalTrade = playerService.findTradeById(tradeId);
+        Optional<Trade> optionalTrade = tradingService.findTradeById(tradeId);
 
         if (optionalTrade.isEmpty()) {
             return new Response(
@@ -144,7 +157,7 @@ public class TradeController extends Controller {
             }
         }
 
-        playerService.deleteTrade(trade);
+        tradingService.deleteTrade(trade);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -175,7 +188,7 @@ public class TradeController extends Controller {
     // TODO: CHECK WHEN CREATING DECK THAT CARD IS NOT IN TRADE 409 response?
     // POST /tradings
     private Response createTrade(User user, Trade trade) {
-        Optional<Trade> optionalTrade = playerService.findTradeById(trade.getId());
+        Optional<Trade> optionalTrade = tradingService.findTradeById(trade.getId());
         if (optionalTrade.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -205,7 +218,7 @@ public class TradeController extends Controller {
             return notOwnerOrLockedResponse;
         }
 
-        playerService.createTrade(trade);
+        tradingService.createTrade(trade);
         return new Response(
                 HttpStatus.CREATED,
                 ContentType.JSON,

@@ -4,6 +4,7 @@ import app.controllers.*;
 import app.dao.*;
 import app.models.User;
 import app.service.TokenServiceImpl;
+import app.service.UserServiceImpl;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
@@ -20,20 +21,20 @@ public class App implements ServerApp {
     private CardController cardController;
     private PackageController packageController;
     private PackageCardUserController packageCardUserController;
-    private StatsController statsController;
+    private GameController gameController;
     private BattleController battleController;
-    private TradeController tradeController;
+    private TradingContoller tradingContoller;
 
     private TokenServiceImpl tokenService = new TokenServiceImpl();
 
     public App() {
-        setUserController(new UserController(new UserDao()));
+        setUserController(new UserController(new UserServiceImpl()));
         setCardController(new CardController(new CardDao()));
         setPackageController(new PackageController(new PackageDao()));
         setPackageCardUserController(new PackageCardUserController(new UserDao(), new PackageDao(), new CardDao(), new DeckDao()));
-        setStatsController(new StatsController(new StatsDao()));
+        setGameController(new GameController());
         setBattleController(new BattleController());
-        setTradeController(new TradeController());
+        setTradingContoller(new TradingContoller());
     }
 
     @Override
@@ -48,11 +49,11 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/decks")) {
                     return getPackageCardUserController().getDeck(user);
                 } else if (request.getPathName().equals("/stats")) {
-                    return getStatsController().getStats(user);
+                    return getGameController().getStats(user);
                 } else if (request.getPathName().equals("/scores")) {
-                    return getStatsController().getScoreboard();
+                    return getGameController().getScoreboard();
                 } else if (request.getPathName().equals("/tradings")) {
-                    return getTradeController().getAllTrades(user);
+                    return getTradingContoller().getAllTrades(user);
                 }
                 break;
             }
@@ -70,9 +71,9 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/battles")) {
                    return getBattleController().battle(user);
                 } else if (request.getPathName().equals("/tradings")) {
-                    return getTradeController().createTrade(user, request.getBody());
+                    return getTradingContoller().createTrade(user, request.getBody());
                 } else if (request.getBasePath().equals("/tradings") && request.getPathParams().size() == 1) {
-                    return getTradeController().completeTrade(user, request.getPathParams().get(0), request.getBody());
+                    return getTradingContoller().completeTrade(user, request.getPathParams().get(0), request.getBody());
                 }
                 break;
             }
@@ -85,7 +86,7 @@ public class App implements ServerApp {
                 break;
             case DELETE: {
                 if (request.getBasePath().equals("/tradings") && request.getPathParams().size() == 1) {
-                    return getTradeController().deleteTrade(user, request.getPathParams().get(0));
+                    return getTradingContoller().deleteTrade(user, request.getPathParams().get(0));
                 }
                 break;
             }

@@ -19,6 +19,7 @@ public class BattleController {
     private final BlockingQueue<User> blockingQueue = new LinkedBlockingQueue<>(1);
     private final ConcurrentMap<String, BlockingQueue<Response>> userIdToResponse = new ConcurrentHashMap<>();
     private final Arena arena = new Arena();
+
     private PlayerServiceImpl playerService = new PlayerServiceImpl();
 
     private Response battlePreCheck(User user) {
