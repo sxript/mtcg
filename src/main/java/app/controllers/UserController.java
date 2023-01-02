@@ -74,7 +74,7 @@ public class UserController extends Controller {
     public Response getUser(User user, String username) {
         Optional<User> optionalUser = userDao.get(username);
 
-        if (user == null || (!Objects.equals(user.getUsername(), username) || !user.isAdmin())) {
+        if (user == null || (!Objects.equals(user.getUsername(), username) && !user.isAdmin())) {
             return CommonErrors.TOKEN_ERROR;
         }
 
@@ -104,7 +104,7 @@ public class UserController extends Controller {
     }
 
     public Response updateUser(User user, String username, String rawUser) {
-        if (user == null || (!Objects.equals(user.getUsername(), username) || !user.isAdmin())) {
+        if (user == null || (!Objects.equals(user.getUsername(), username) && !user.isAdmin())) {
             return CommonErrors.TOKEN_ERROR;
         }
 

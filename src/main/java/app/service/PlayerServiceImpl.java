@@ -84,6 +84,11 @@ public class PlayerServiceImpl implements  PlayerService {
     }
 
     @Override
+    public void updateUser(User oldUser, User updatedUser) {
+        getUserDao().update(oldUser, updatedUser);
+    }
+
+    @Override
     public void updateCard(Card oldCard, Card newCard) {
        cardDao.update(oldCard, newCard);
     }

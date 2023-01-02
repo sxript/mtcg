@@ -1,2 +1,5 @@
-package app.service;public class TradingService {
+package app.service;
+
+public interface TradingService {
+
 }

@@ -26,6 +26,8 @@ public interface PlayerService {
 
     Optional<Deck> findDeckByUserId(String userId);
 
+    void updateUser(User oldUser, User updatedUser);
+
     void updateCard(Card oldCard, Card newCard);
 
     void createTrade(Trade trade);

@@ -59,6 +59,7 @@ public class CardDao implements Dao<Card> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        // TODO: https://stackoverflow.com/questions/15031866/jdbc-does-call-to-rollback-method-have-effect-only-if-call-to-commit-method
         return result;
     }
 
@@ -90,7 +91,7 @@ public class CardDao implements Dao<Card> {
 
             // Execute Query
             int affectedColumns = statement.executeUpdate();
-            System.out.println("AFFECTED: " + affectedColumns);
+//            System.out.println("AFFECTED: " + affectedColumns);
         } catch (SQLException e) {
             e.printStackTrace();
         }

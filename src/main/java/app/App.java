@@ -4,7 +4,6 @@ import app.controllers.*;
 import app.dao.*;
 import app.models.User;
 import app.service.TokenServiceImpl;
-import game.GameQueue;
 import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
@@ -13,9 +12,6 @@ import lombok.Setter;
 import server.Request;
 import server.Response;
 import server.ServerApp;
-
-import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
 
 @Setter(AccessLevel.PRIVATE)
 @Getter(AccessLevel.PRIVATE)

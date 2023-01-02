@@ -74,10 +74,10 @@ public class PackageCardUserController extends Controller {
 
     // PUT /decks
     public Response setUserDeck(User user, String deckJSON) {
-        // TODO: REFACTOR THIS CLASS THAT PROVIDES TWO STATIC METHODS ONE FOR ONLY USER CHECK LIKE THIS AND ONE INCLUDING ADMIN CHECK
         if (user == null) {
             return CommonErrors.TOKEN_ERROR;
         }
+
         try {
             JsonNode jsonNode = getObjectMapper().readTree(deckJSON);
             if (!jsonNode.isArray()) throw new CustomJsonProcessingException("No array Provided");
@@ -108,16 +108,25 @@ public class PackageCardUserController extends Controller {
             }
 
             deck = deck == null ? tempDeck : deck;
-            ArrayList<String> cardsAddedToDeck = new ArrayList<>();
+            Set<String> cardsAddedToDeck = new HashSet<>();
             for (JsonNode node : jsonNode) {
                 String cardId = node.asText();
+                if (cardsAddedToDeck.contains(cardId)) {
+                    rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
+                    return new Response(
+                            HttpStatus.BAD_REQUEST,
+                            ContentType.JSON,
+                            "{ \"message\": \"No duplicate Card IDs\"}"
+                    );
+                }
                 Response response = setUserCard(user, deck, cardId);
                 if (response.getStatusCode() < 200 || response.getStatusCode() > 299) {
-                    rollbackUserDeck(tempDeck, cardsAddedToDeck, cardsInDeckBeforeTx);
+                    rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
                     return response;
                 }
                 cardsAddedToDeck.add(cardId);
             }
+
             return new Response(
                     HttpStatus.CREATED,
                     ContentType.JSON,
@@ -165,7 +174,7 @@ public class PackageCardUserController extends Controller {
             return forbidden;
         }
 
-        Card oldCard = new MonsterCard(card.getId(), card.getName(), 0, null, null, null, null);
+        Card oldCard = new MonsterCard(card);
         card.setDeckId(deck.getId());
         cardDao.update(oldCard, card);
 

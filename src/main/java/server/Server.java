@@ -1,16 +1,12 @@
 package server;
 
 import app.App;
-import game.GameQueue;
-import http.ContentType;
-import http.HttpStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.*;
 import java.net.*;
-import java.nio.channels.ServerSocketChannel;
 
 @Getter(AccessLevel.PRIVATE)
 @Setter(AccessLevel.PRIVATE)
