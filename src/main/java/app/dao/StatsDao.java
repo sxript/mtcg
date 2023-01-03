@@ -56,17 +56,62 @@ public class StatsDao implements Dao<Stats> {
 
     @Override
     public void save(Stats stats) {
+        try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+                INSERT INTO "Stats"
+                (id, elo, wins, losses, draws, userid)
+                VALUES (?, ?, ?, ?, ?, ?);
+                """)) {
 
+            // Create Empty Package
+            statement.setString(1, stats.getId());
+            statement.setInt(2, stats.getElo());
+            statement.setInt(3, stats.getWins());
+            statement.setInt(4, stats.getLosses());
+            statement.setInt(5, stats.getDraws());
+            statement.setString(6, stats.getUserId());
+
+            // TODO: HANDLE AFFECTED
+            int affectedColumns = statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void update(Stats stats, Stats d) {
+    public void update(Stats stats, Stats updatedStats) {
+        try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+                UPDATE "Stats"
+                SET elo = ?, wins = ?, losses = ?, draws = ?
+                WHERE userid = ?
+                """)
+        ) {
+            // UPDATE WITH NEW STATS DATA
+            statement.setInt(1, updatedStats.getElo());
+            statement.setInt(2, updatedStats.getWins());
+            statement.setInt(3, updatedStats.getLosses());
+            statement.setInt(4, updatedStats.getLosses());
 
+            // USE CURRENT ID
+            statement.setString(5, stats.getUserId());
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void delete(Stats stats) {
-
+        try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+                DELETE FROM "Stats"
+                WHERE userid = ?;
+                """)
+        ) {
+            statement.setString(1, stats.getUserId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private Stats createStatsFromResultSet(ResultSet resultSet) throws SQLException {

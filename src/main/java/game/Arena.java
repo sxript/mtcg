@@ -1,8 +1,9 @@
 package game;
 
 import app.models.*;
-import app.service.PlayerServiceImpl;
+import app.service.*;
 import enums.Element;
+import helper.CommonErrors;
 import helper.Tuple;
 import http.ContentType;
 import http.HttpStatus;
@@ -13,46 +14,43 @@ import java.util.*;
 public class Arena {
     private static final Random rnd = new Random();
     private static final int MAX_ROUNDS = 100;
-    PlayerServiceImpl playerService = new PlayerServiceImpl();
-    // TODO: ADDING CARDS TO DECK THINK ABOU DUPLICATE CAN I ADD THE SAME CARD MORE THAN ONCE
+    private final CardService cardService = new CardServiceImpl();
+    private final UserService userService = new UserServiceImpl();
 
-    // TODO: CHECK IF DECK HAS 4 Cards in it
     public Response battle(User player1, User player2) {
         String winnerId = null;
 
-        Optional<Deck> optionalDeckP1 = playerService.findDeckByUserId(player1.getId());
-        Optional<Deck> optionalDeckP2 = playerService.findDeckByUserId(player2.getId());
+        Optional<Deck> optionalDeckP1 = cardService.findDeckByUserId(player1.getId());
+        Optional<Deck> optionalDeckP2 = cardService.findDeckByUserId(player2.getId());
 
         if (optionalDeckP1.isEmpty() || optionalDeckP2.isEmpty()) {
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"message\": \"Something went wrong\"}"
-            );
+            return CommonErrors.INTERNAL_SERVER_ERROR;
         }
+
         Deck p1Deck = optionalDeckP1.get();
         Deck p2Deck = optionalDeckP2.get();
 
-        ArrayList<Card> p1DeckCards = (ArrayList<Card>) playerService.findCardsByDeckId(p1Deck.getId());
-        ArrayList<Card> p2DeckCards = (ArrayList<Card>) playerService.findCardsByDeckId(p2Deck.getId());
+        ArrayList<Card> p1DeckCards = (ArrayList<Card>) cardService.findAllCardsByDeckId(p1Deck.getId());
+        ArrayList<Card> p2DeckCards = (ArrayList<Card>) cardService.findAllCardsByDeckId(p2Deck.getId());
 
-        if (p1DeckCards.size() != 4 || p2DeckCards.size() != 4) {
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"message\": \"Something went wrong\"}"
-            );
+        Optional<Stats> optionalStatsPlayer1 = userService.findStatsByUserId(player1.getId());
+        Optional<Stats> optionalStatsPlayer2 = userService.findStatsByUserId(player2.getId());
+        if (p1DeckCards.size() != 4 || p2DeckCards.size() != 4 || optionalStatsPlayer1.isEmpty() || optionalStatsPlayer2.isEmpty()) {
+            return CommonErrors.INTERNAL_SERVER_ERROR;
         }
+
+        Stats player1Stats = optionalStatsPlayer1.get();
+        Stats player2Stats = optionalStatsPlayer2.get();
 
         for (int i = 0; i < MAX_ROUNDS; i++) {
             if (p1DeckCards.isEmpty()) {
                 winnerId = player2.getId();
-                updateScore(player2, player1);
+                updateScore(player2Stats, player1Stats);
                 printWinner(player2);
                 break;
             } else if (p2DeckCards.isEmpty()) {
                 winnerId = player1.getId();
-                updateScore(player1, player2);
+                updateScore(player1Stats, player2Stats);
                 printWinner(player1);
                 break;
             }
@@ -90,7 +88,7 @@ public class Arena {
                 player1CardCopy.setUserId(player2.getId());
                 player1CardCopy.setDeckId(p2Deck.getId());
                 System.out.println("COPIED CARD: " + player1CardCopy);
-                playerService.updateCard(player1CardCopy, player1CardCopy);
+                cardService.updateCard(player1CardCopy, player1CardCopy);
             } else {
                 System.out.println("Player 1 Card is stronger");
                 p2DeckCards.remove(cP2);
@@ -102,7 +100,7 @@ public class Arena {
                 player2CardCopy.setUserId(player1.getId());
                 player2CardCopy.setDeckId(p1Deck.getId());
                 System.out.println("COPIED CARD: " + player2CardCopy);
-                playerService.updateCard(player2CardCopy, player2CardCopy);
+                cardService.updateCard(player2CardCopy, player2CardCopy);
             }
         }
 
@@ -110,10 +108,11 @@ public class Arena {
         updateDecks(p2DeckCards);
 
         if (winnerId == null) {
-            player1.getStats().setDraws(player1.getStats().getDraws() + 1);
-            player2.getStats().setDraws(player2.getStats().getDraws() + 1);
-            playerService.updateUser(player1, player1);
-            playerService.updateUser(player2, player2);
+            player1Stats.setDraws(player1Stats.getDraws() + 1);
+            player2Stats.setDraws(player2Stats.getDraws() + 1);
+
+            userService.updateStats(player1Stats, player1Stats);
+            userService.updateStats(player2Stats, player2Stats);
             System.out.println("THE GAME ENDED IN A DRAW");
             return new Response(
                     HttpStatus.OK,
@@ -133,7 +132,7 @@ public class Arena {
     private void updateDecks(List<Card> cards) {
         cards.forEach(card -> {
             card.setDeckId(null);
-            playerService.updateCard(card, card);
+            cardService.updateCard(card, card);
         });
     }
 
@@ -183,17 +182,17 @@ public class Arena {
         System.out.println("USER: " + user.getUsername() + " WON!");
     }
 
-    private void updateScore(User winner, User loser) {
+    private void updateScore(Stats winner, Stats loser) {
         // TODO: WRITE SERVICE METHODS THAT DO THIS
         // Update game counts
-        winner.getStats().setWins(winner.getStats().getWins() + 1);
-        loser.getStats().setLosses(loser.getStats().getLosses() + 1);
+        winner.setWins(winner.getWins() + 1);
+        loser.setLosses(loser.getLosses() + 1);
 
         // Update elo
-        winner.getStats().setElo(winner.getStats().getElo() + 3);
-        loser.getStats().setElo(loser.getStats().getElo() - 5);
+        winner.setElo(winner.getElo() + 3);
+        loser.setElo(loser.getElo() - 5);
 
-        playerService.updateUser(winner, winner);
-        playerService.updateUser(loser, loser);
+        userService.updateStats(winner, winner);
+        userService.updateStats(loser, loser);
     }
 }

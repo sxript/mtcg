@@ -1,6 +1,7 @@
 package app.models;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class Stats {
     private static final int START_LOSSES = 0;
     private static final int START_DRAWS = 0;
 
+    @JsonIgnore
     @JsonAlias({"id"})
     private String id = UUID.randomUUID().toString();
 
@@ -33,6 +35,7 @@ public class Stats {
     @JsonAlias({"draws"})
     private int draws;
 
+    @JsonIgnore
     @JsonAlias({"user_id"})
     private String userId;
 

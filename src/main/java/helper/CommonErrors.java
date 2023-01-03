@@ -10,4 +10,10 @@ public class CommonErrors {
             ContentType.JSON,
             "{ \"error\": \"Access token is missing or invalid\"}"
     );
+
+    public static Response INTERNAL_SERVER_ERROR = new Response(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            ContentType.JSON,
+            "{ \"error\": \"Something went wrong\" }"
+    );
 }

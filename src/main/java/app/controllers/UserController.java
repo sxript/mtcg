@@ -1,5 +1,8 @@
 package app.controllers;
 
+import app.dto.UserStatsProfileDTO;
+import app.models.Profile;
+import app.models.Stats;
 import app.models.User;
 import app.service.TokenServiceImpl;
 import app.service.UserService;
@@ -71,12 +74,13 @@ public class UserController extends Controller {
 
     // GET /users/:username
     public Response getUser(User user, String username) {
-        Optional<User> optionalUser = userService.getUserByUsername(username);
-
         if (user == null || (!Objects.equals(user.getUsername(), username) && !user.isAdmin())) {
             return CommonErrors.TOKEN_ERROR;
         }
 
+        UserStatsProfileDTO userDTO = new UserStatsProfileDTO();
+
+        Optional<User> optionalUser = userService.getUserByUsername(username);
         if(optionalUser.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
@@ -84,9 +88,15 @@ public class UserController extends Controller {
                     "{ \"error\": \" User not found \"}"
             );
         }
+        userDTO.setUser(optionalUser.get());
+        Optional<Stats> optionalStats = userService.findStatsByUserId(user.getId());
+        Optional<Profile> optionalProfile = userService.findProfileByUserId(user.getId());
+
+        optionalStats.ifPresent(userDTO::setStats);
+        optionalProfile.ifPresent(userDTO::setProfile);
 
         try {
-            String userDataJson = getObjectMapper().writeValueAsString(optionalUser.get());
+            String userDataJson = getObjectMapper().writeValueAsString(userDTO);
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
@@ -94,11 +104,7 @@ public class UserController extends Controller {
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"error\": \"Internal Server Error\", \"data\": null }"
-            );
+            return CommonErrors.INTERNAL_SERVER_ERROR;
         }
     }
 
@@ -107,10 +113,10 @@ public class UserController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        User updatedUser;
+        UserStatsProfileDTO updatedUser;
 
         try {
-            updatedUser = getObjectMapper().readValue(rawUser, User.class);
+            updatedUser = getObjectMapper().readValue(rawUser, UserStatsProfileDTO.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return new Response(
@@ -124,7 +130,7 @@ public class UserController extends Controller {
     }
 
     // PUT /users/:username
-    private Response updateUser(String username, User updatedUser) {
+    private Response updateUser(String username, UserStatsProfileDTO updatedUser) {
         Optional<User> optionalUser = userService.getUserByUsername(username);
 
         if(optionalUser.isEmpty()) {
@@ -135,10 +141,18 @@ public class UserController extends Controller {
             );
         }
         User user = optionalUser.get();
-        user.setName(updatedUser.getName());
-        user.getProfile().setBio(updatedUser.getProfile().getBio());
-        user.getProfile().setImage(updatedUser.getProfile().getImage());
+        user.setName(updatedUser.getUser().getName());
+        Optional<Profile> optionalProfile = userService.findProfileByUserId(user.getId());
+        Profile profile;
+        if(optionalProfile.isEmpty()) {
+            profile = new Profile();
+            userService.createProfile(profile);
+        } else profile = optionalProfile.get();
+        profile.setBio(updatedUser.getProfile().getBio());
+        profile.setImage(updatedUser.getProfile().getImage());
+
         userService.updateUser(new User(username, ""), user);
+        userService.updateProfile(profile, profile);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -178,7 +192,7 @@ public class UserController extends Controller {
             return new Response(
                     HttpStatus.UNAUTHORIZED,
                     ContentType.JSON,
-                    "{ \"error\": \" Invalid username/password provided \"}"
+                    "{ \"error\": \"Invalid username/password provided \"}"
             );
         }
 

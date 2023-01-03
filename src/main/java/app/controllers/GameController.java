@@ -1,7 +1,6 @@
 package app.controllers;
 
-import app.dao.StatsDao;
-import app.models.Stats;
+import app.dto.UserStatsDTO;
 import app.models.User;
 import app.service.GameService;
 import app.service.GameServiceImpl;
@@ -11,14 +10,12 @@ import http.ContentType;
 import http.HttpStatus;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import server.Response;
 
 import java.util.ArrayList;
 import java.util.Optional;
 
 public class GameController extends Controller {
-    @Setter(AccessLevel.PRIVATE)
     @Getter(AccessLevel.PRIVATE)
     private final GameService gameService;
 
@@ -36,35 +33,30 @@ public class GameController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Stats> optionalStats = getStatsDao().get(user.getId());
+        Optional<UserStatsDTO> optionalUserStatsDTO = getGameService().getStatsByUserId(user.getId());
 
-        if(optionalStats.isEmpty()) {
+        if(optionalUserStatsDTO.isEmpty()) {
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.JSON,
-                    "{ \"error\": \"No user with user_id: "+ user.getId() + " found\" }"
+                    "{ \"error\": \"No user with Id: "+ user.getId() + " found\" }"
             );
         }
         try {
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    "{ \"message\": \"Stats found\", \"data\": " + getObjectMapper().writeValueAsString(optionalStats.get()) + "}"
+                    "{ \"message\": \"Stats found\", \"data\": " + getObjectMapper().writeValueAsString(optionalUserStatsDTO.get()) + "}"
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"error\": \"Something went wrong\" }"
-            );
+            return CommonErrors.INTERNAL_SERVER_ERROR;
         }
     }
 
     // GET /scores
-    // TODO: THIS CURRENTLY HAS NO USERNAME MAYBE ADD THAT?
     public Response getScoreboard() {
-        ArrayList<Stats> stats = (ArrayList<Stats>) statsDao.getAll();
+        ArrayList<UserStatsDTO> stats = (ArrayList<UserStatsDTO>) getGameService().getAllStatsSorted();
         try {
             return new Response(
                     HttpStatus.OK,
@@ -73,11 +65,7 @@ public class GameController extends Controller {
             );
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "{ \"error\": \"Something went wrong\" }"
-            );
+            return CommonErrors.INTERNAL_SERVER_ERROR;
         }
     }
 }

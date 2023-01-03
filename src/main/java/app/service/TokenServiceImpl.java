@@ -40,8 +40,13 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String parseAccessToken(String token) {
-        // TODO: CHECK IF EQUALS -mtcgToken
-        return token == null ? "" : token.split("-")[0];
+        if (token == null) return "";
+        String[] split = token.split("-");
+        if(split.length != 2) return "";
+
+        String username = split[0];
+        String tokenEnd = split[1];
+        return Objects.equals(tokenEnd, "mtcgToken") ? username : "";
     }
 
     @Override

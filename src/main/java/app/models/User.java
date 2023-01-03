@@ -30,56 +30,23 @@ public class User {
     @JsonSetter(nulls = Nulls.SKIP)
     private int coins = START_COINS;
 
-    @JsonAlias({"Stack"})
-    private List<String> stack;
-
-    @JsonAlias({"Deck"})
-    private Deck deck;
-
-    // TODO: DELETE STATS AND PROFILE THESE DO NOT BELONG HERE
-    @JsonAlias({"Stats"})
-    @JsonSetter(nulls = Nulls.SKIP)
-    @JsonUnwrapped
-    private Stats stats = new Stats();
-
-    @JsonAlias({"Profile"})
-    @JsonUnwrapped
-    private Profile profile;
-
     private boolean isAdmin = false;
 
-    public User(String id, String name, String username, String password, Integer coins, Stats stats, Profile profile) {
+    public User(String id, String name, String username, String password, Integer coins) {
         setId(id);
         setName(name);
         setUsername(username);
         setPassword(password);
         setCoins(coins);
-        setStats(stats);
-        setProfile(profile);
-
     }
-    public User(String name, String username, String password, Integer coins, Stats stats, Profile profile) {
+    public User(String name, String username, String password, Integer coins) {
         setName(name);
         setUsername(username);
         setPassword(password);
         setCoins(coins);
-        setStats(stats);
-        setProfile(profile);
 
     }
     public User(String username, String password) {
-        this(null, username, password, START_COINS,  new Stats(), new Profile());
+        this(null, username, password, START_COINS);
     }
-
-    //    public Card drawCard() {
-//        return deck.getDeck().get(rnd.nextInt(deck.getDeck().size()));
-//    }
-//
-//    public boolean removeCard(Card card) {
-//        return deck.getDeck().remove(card);
-//    }
-//
-//    public void addCard(Card card) {
-//        deck.getDeck().add(card);
-//    }
 }

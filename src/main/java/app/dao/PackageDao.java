@@ -39,7 +39,6 @@ public class PackageDao implements Dao<Package> {
 
     @Override
     public void save(Package aPackage) {
-        // TODO: MAYBE CREATE PACKAGE IDS IN CLASS
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Package"
                 (id, price)
@@ -76,7 +75,6 @@ public class PackageDao implements Dao<Package> {
         }
     }
 
-    // TODO: IDK NOT IN INTERFACE
     public Optional<Package> getFirst() {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, price
