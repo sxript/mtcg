@@ -172,7 +172,6 @@ public class CardController extends Controller {
     }
 
     // GET /decks
-    // TODO: REFACTOR ALL CONTROLLERS TO USE GET METHOD FOR DAO
     public Response getDeck(User user) {
         if(user == null) {
             return CommonErrors.TOKEN_ERROR;
@@ -244,12 +243,20 @@ public class CardController extends Controller {
             Set<String> cardsAddedToDeck = new HashSet<>();
             for (JsonNode node : jsonNode) {
                 String cardId = node.asText();
+                if(cardService.findTradeByCardId(cardId).isPresent()) {
+                   rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
+                   return new Response(
+                           HttpStatus.CONFLICT,
+                           ContentType.JSON,
+                           "{ \"error\": \"Card with the Id " + cardId + " is locked\"}"
+                   );
+                }
                 if (cardsAddedToDeck.contains(cardId)) {
                     rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
                     return new Response(
                             HttpStatus.BAD_REQUEST,
                             ContentType.JSON,
-                            "{ \"message\": \"No duplicate Card IDs\"}"
+                            "{ \"error\": \"No duplicate Card IDs\"}"
                     );
                 }
                 Response response = setUserCard(user, deck, cardId);

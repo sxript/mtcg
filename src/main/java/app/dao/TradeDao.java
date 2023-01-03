@@ -32,6 +32,26 @@ public class TradeDao implements Dao<Trade> {
         return Optional.empty();
     }
 
+    public Optional<Trade> getByCardId(String cardId) {
+        try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
+                SELECT id, card_id, type, min_damage
+                FROM "Trade"
+                WHERE card_id = ?;
+                """)
+        ) {
+            statement.setString(1, cardId);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return Optional.of(createTradeFromResultSet(resultSet));
+            }
+            DBConnection.getInstance().getConnection().commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
     @Override
     public Collection<Trade> getAll() {
         ArrayList<Trade> result = new ArrayList<>();

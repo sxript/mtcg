@@ -1,9 +1,7 @@
 package app.service;
 
-import app.models.Card;
-import app.models.Deck;
+import app.models.*;
 import app.models.Package;
-import app.models.User;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -35,4 +33,5 @@ public interface CardService {
 
     void updateUser(String username, User updatedUser);
 
+    Optional<Trade> findTradeByCardId(String cardId);
 }

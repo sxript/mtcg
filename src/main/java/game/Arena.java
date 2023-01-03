@@ -183,7 +183,6 @@ public class Arena {
     }
 
     private void updateScore(Stats winner, Stats loser) {
-        // TODO: WRITE SERVICE METHODS THAT DO THIS
         // Update game counts
         winner.setWins(winner.getWins() + 1);
         loser.setLosses(loser.getLosses() + 1);

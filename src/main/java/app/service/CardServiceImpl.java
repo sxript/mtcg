@@ -1,13 +1,8 @@
 package app.service;
 
-import app.dao.CardDao;
-import app.dao.DeckDao;
-import app.dao.PackageDao;
-import app.dao.UserDao;
-import app.models.Card;
-import app.models.Deck;
+import app.dao.*;
+import app.models.*;
 import app.models.Package;
-import app.models.User;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -17,16 +12,18 @@ public class CardServiceImpl implements CardService {
     private final PackageDao packageDao;
     private final DeckDao deckDao;
     private final UserDao userDao;
+    private final TradeDao tradeDao;
 
-    public CardServiceImpl(CardDao cardDao, PackageDao packageDao, DeckDao deckDao, UserDao userDao) {
+    public CardServiceImpl(CardDao cardDao, PackageDao packageDao, DeckDao deckDao, UserDao userDao, TradeDao tradeDao) {
         this.cardDao = cardDao;
         this.packageDao = packageDao;
         this.deckDao = deckDao;
         this.userDao = userDao;
+        this.tradeDao = tradeDao;
     }
 
     public CardServiceImpl() {
-       this(new CardDao(), new PackageDao(), new DeckDao(), new UserDao());
+       this(new CardDao(), new PackageDao(), new DeckDao(), new UserDao(), new TradeDao());
     }
 
     @Override
@@ -92,5 +89,10 @@ public class CardServiceImpl implements CardService {
     @Override
     public void updateUser(String username, User updatedUser) {
         userDao.update(username, updatedUser);
+    }
+
+    @Override
+    public Optional<Trade> findTradeByCardId(String cardId) {
+        return tradeDao.getByCardId(cardId);
     }
 }

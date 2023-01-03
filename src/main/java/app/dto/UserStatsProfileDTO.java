@@ -17,7 +17,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class UserStatsProfileDTO {
-    // TODO: HOW TO SKIP STATS ID ETC FROM JACKSON PARSING
     @JsonAlias({"User"})
     @JsonSetter(nulls = Nulls.SKIP)
     @JsonUnwrapped

@@ -191,7 +191,6 @@ public class TradingController extends Controller {
         return createTrade(user, trade);
     }
 
-    // TODO: CHECK WHEN CREATING DECK THAT CARD IS NOT IN TRADE 409 response?
     // POST /tradings
     private Response createTrade(User user, Trade trade) {
         Optional<Trade> optionalTrade = tradingService.findTradeById(trade.getId());

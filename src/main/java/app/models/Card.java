@@ -23,7 +23,6 @@ import java.util.Optional;
 @ToString
 public abstract class Card {
     @JsonAlias({"Id"})
-    //TODO: SET DEFAULT ID
     private String id;
 
     @JsonAlias({"Name"})

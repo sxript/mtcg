@@ -3,6 +3,7 @@ package db;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.postgresql.ds.PGPoolingDataSource;
 
 import java.io.Closeable;
 import java.sql.*;
