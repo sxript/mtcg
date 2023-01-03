@@ -25,4 +25,8 @@ public class Profile {
     @JsonIgnore
     @JsonAlias({"user_id"})
     private String userId;
+
+    public Profile(String userId) {
+        setUserId(userId);
+    }
 }

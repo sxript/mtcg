@@ -57,7 +57,7 @@ public class PackageDao implements Dao<Package> {
     }
 
     @Override
-    public void update(Package aPackage, Package updatedPackage) {
+    public void update(String packageId, Package updatedPackage) {
 
     }
 

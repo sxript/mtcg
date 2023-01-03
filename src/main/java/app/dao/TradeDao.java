@@ -71,7 +71,7 @@ public class TradeDao implements Dao<Trade> {
     }
 
     @Override
-    public void update(Trade trade, Trade updatedTrade) {
+    public void update(String tradeId, Trade updatedTrade) {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Trade"
                 SET card_id = ?, type = ?, min_damage = ?
@@ -84,7 +84,7 @@ public class TradeDao implements Dao<Trade> {
             statement.setInt(3, updatedTrade.getMinimumDamage());
 
             // USE CURRENT ID
-            statement.setString(4, trade.getId());
+            statement.setString(4, tradeId);
 
             statement.executeUpdate();
         } catch (SQLException e) {

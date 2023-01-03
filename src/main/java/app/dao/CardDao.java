@@ -99,7 +99,7 @@ public class CardDao implements Dao<Card> {
 
     @Override
     // TODO: UPDATE most of the time i call it with the same instance twice ?!?
-    public void update(Card card, Card updatedCard) {
+    public void update(String oldCardId, Card updatedCard) {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Card"
                 SET name = ?, damage = ?, element = ?::"Element", package_id = ?, user_id = ?, deck_id = ?
@@ -115,7 +115,7 @@ public class CardDao implements Dao<Card> {
             statement.setString(6, updatedCard.getDeckId());
 
             // USE CURRENT ID
-            statement.setString(7, card.getId());
+            statement.setString(7, oldCardId);
 
             statement.executeUpdate();
         } catch (SQLException e) {

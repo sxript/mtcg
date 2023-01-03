@@ -78,7 +78,7 @@ public class StatsDao implements Dao<Stats> {
     }
 
     @Override
-    public void update(Stats stats, Stats updatedStats) {
+    public void update(String userId, Stats updatedStats) {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Stats"
                 SET elo = ?, wins = ?, losses = ?, draws = ?
@@ -89,10 +89,10 @@ public class StatsDao implements Dao<Stats> {
             statement.setInt(1, updatedStats.getElo());
             statement.setInt(2, updatedStats.getWins());
             statement.setInt(3, updatedStats.getLosses());
-            statement.setInt(4, updatedStats.getLosses());
+            statement.setInt(4, updatedStats.getDraws());
 
             // USE CURRENT ID
-            statement.setString(5, stats.getUserId());
+            statement.setString(5, userId);
 
             statement.executeUpdate();
         } catch (SQLException e) {

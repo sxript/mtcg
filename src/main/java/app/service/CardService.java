@@ -21,7 +21,7 @@ public interface CardService {
 
     void deleteCard(Card card);
 
-    void updateCard(Card oldCard, Card newCard);
+    void updateCard(String cardId, Card newCard);
 
     Optional<Deck> findDeckByUserId(String userId);
 
@@ -33,6 +33,6 @@ public interface CardService {
 
     void deletePackage(Package packageToDelete);
 
-    void updateUser(User oldUser, User updatedUser);
+    void updateUser(String userId, User updatedUser);
 
 }

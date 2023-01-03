@@ -88,7 +88,7 @@ public class Arena {
                 player1CardCopy.setUserId(player2.getId());
                 player1CardCopy.setDeckId(p2Deck.getId());
                 System.out.println("COPIED CARD: " + player1CardCopy);
-                cardService.updateCard(player1CardCopy, player1CardCopy);
+                cardService.updateCard(player1CardCopy.getId(), player1CardCopy);
             } else {
                 System.out.println("Player 1 Card is stronger");
                 p2DeckCards.remove(cP2);
@@ -100,7 +100,7 @@ public class Arena {
                 player2CardCopy.setUserId(player1.getId());
                 player2CardCopy.setDeckId(p1Deck.getId());
                 System.out.println("COPIED CARD: " + player2CardCopy);
-                cardService.updateCard(player2CardCopy, player2CardCopy);
+                cardService.updateCard(player2CardCopy.getId(), player2CardCopy);
             }
         }
 
@@ -111,8 +111,8 @@ public class Arena {
             player1Stats.setDraws(player1Stats.getDraws() + 1);
             player2Stats.setDraws(player2Stats.getDraws() + 1);
 
-            userService.updateStats(player1Stats, player1Stats);
-            userService.updateStats(player2Stats, player2Stats);
+            userService.updateStats(player1Stats.getUserId(), player1Stats);
+            userService.updateStats(player2Stats.getUserId(), player2Stats);
             System.out.println("THE GAME ENDED IN A DRAW");
             return new Response(
                     HttpStatus.OK,
@@ -132,7 +132,7 @@ public class Arena {
     private void updateDecks(List<Card> cards) {
         cards.forEach(card -> {
             card.setDeckId(null);
-            cardService.updateCard(card, card);
+            cardService.updateCard(card.getId(), card);
         });
     }
 
@@ -192,7 +192,7 @@ public class Arena {
         winner.setElo(winner.getElo() + 3);
         loser.setElo(loser.getElo() - 5);
 
-        userService.updateStats(winner, winner);
-        userService.updateStats(loser, loser);
+        userService.updateStats(winner.getUserId(), winner);
+        userService.updateStats(loser.getUserId(), loser);
     }
 }

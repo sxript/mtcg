@@ -145,14 +145,14 @@ public class UserController extends Controller {
         Optional<Profile> optionalProfile = userService.findProfileByUserId(user.getId());
         Profile profile;
         if(optionalProfile.isEmpty()) {
-            profile = new Profile();
+            profile = new Profile(user.getId());
             userService.createProfile(profile);
         } else profile = optionalProfile.get();
         profile.setBio(updatedUser.getProfile().getBio());
         profile.setImage(updatedUser.getProfile().getImage());
 
-        userService.updateUser(new User(username, ""), user);
-        userService.updateProfile(profile, profile);
+        userService.updateUser(username, user);
+        userService.updateProfile(profile.getId(), profile);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -185,7 +185,7 @@ public class UserController extends Controller {
         return loginUser(new User(user.getUsername(), user.getPassword()));
     }
 
-    // POST /users
+    // POST /sessions
     private Response loginUser(User user) {
         Optional<User> optionalUser = userService.getUserByUsername(user.getUsername());
         if(optionalUser.isEmpty() || !optionalUser.get().getPassword().equals(user.getPassword())) {

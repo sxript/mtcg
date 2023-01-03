@@ -10,17 +10,17 @@ public interface UserService {
     Optional<User> getUserByUsername(String username);
 
     // TODO: Update to use String oldUserId Updated User
-    void updateUser(User oldUser, User updatedUser);
+    void updateUser(String userId, User updatedUser);
 
     void saveUser(User user);
 
     Optional<Stats> findStatsByUserId(String userId);
 
-    void updateStats(Stats oldStats, Stats updatedStats);
+    void updateStats(String statsId, Stats updatedStats);
 
     Optional<Profile> findProfileByUserId(String userId);
 
     void createProfile(Profile profile);
 
-    void updateProfile(Profile oldProfile, Profile updatedProfile);
+    void updateProfile(String profileId, Profile updatedProfile);
 }

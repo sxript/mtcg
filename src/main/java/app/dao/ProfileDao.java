@@ -73,7 +73,7 @@ public class ProfileDao implements Dao<Profile> {
     }
 
     @Override
-    public void update(Profile profile, Profile updatedProfile) {
+    public void update(String profileId, Profile updatedProfile) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Profile"
                 SET bio = ?, image = ?
@@ -85,7 +85,7 @@ public class ProfileDao implements Dao<Profile> {
             statement.setString(2, updatedProfile.getImage());
 
             // USE CURRENT ID
-            statement.setString(3, profile.getId());
+            statement.setString(3, profileId);
 
             statement.executeUpdate();
         } catch (SQLException e) {

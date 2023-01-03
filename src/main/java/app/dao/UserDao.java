@@ -73,7 +73,7 @@ public class UserDao implements Dao<User> {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "User"
                 (id, name, username, password, coins)
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
                 """)) {
             // Insert Into User
             statement.setString(1, user.getId());
@@ -85,18 +85,13 @@ public class UserDao implements Dao<User> {
             // Execute Query
             // TODO: EXECUTE UPDATE
             statement.execute();
-            try (ResultSet rs = statement.getResultSet()) {
-                if (rs.next()) {
-                    System.out.println(rs.getString(1));
-                }
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void update(User user, User updatedUser) {
+    public void update(String username, User updatedUser) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "User"
                 SET name = ?, username = ?, password = ?, coins = ?
@@ -110,7 +105,7 @@ public class UserDao implements Dao<User> {
             statement.setInt(4, updatedUser.getCoins());
 
             // USE CURRENT USERNAME
-            statement.setString(5, user.getUsername());
+            statement.setString(5, username);
 
             statement.execute();
         } catch (SQLException e) {

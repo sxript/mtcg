@@ -40,13 +40,18 @@ public class Stats {
     private String userId;
 
     public Stats() {
-        this(START_ELO, START_WINS, START_LOSSES, START_DRAWS);
+        this(START_ELO, START_WINS, START_LOSSES, START_DRAWS, null);
     }
 
-    public Stats(int elo, int wins, int losses, int draws) {
+    public Stats(String userId) {
+        this(START_ELO, START_WINS, START_LOSSES, START_DRAWS, userId);
+    }
+
+    public Stats(int elo, int wins, int losses, int draws, String userId) {
         setElo(elo);
         setWins(wins);
         setLosses(losses);
         setDraws(draws);
+        setUserId(userId);
     }
 }

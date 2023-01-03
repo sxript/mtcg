@@ -78,7 +78,7 @@ public class DeckDao implements Dao<Deck> {
     }
 
     @Override
-    public void update(Deck deck, Deck d) {
+    public void update(String deckId, Deck updatedDeck) {
 
     }
 

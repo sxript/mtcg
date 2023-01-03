@@ -60,8 +60,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void updateCard(Card oldCard, Card newCard) {
-        cardDao.update(oldCard, newCard);
+    public void updateCard(String cardId, Card newCard) {
+        cardDao.update(cardId, newCard);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void updateUser(User oldUser, User updatedUser) {
-        userDao.update(oldUser, updatedUser);
+    public void updateUser(String userId, User updatedUser) {
+        userDao.update(userId, updatedUser);
     }
 }

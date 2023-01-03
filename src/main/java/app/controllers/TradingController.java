@@ -112,8 +112,8 @@ public class TradingController extends Controller {
         cardFromTradeUpdated.setUserId(cardToTrade.getUserId());
         cardToTradeUpdated.setUserId(cardFromTrade.getUserId());
 
-        cardService.updateCard(cardFromTrade, cardFromTradeUpdated);
-        cardService.updateCard(cardToTrade, cardToTradeUpdated);
+        cardService.updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
+        cardService.updateCard(cardToTrade.getId(), cardToTradeUpdated);
         return new Response(
                HttpStatus.OK,
                ContentType.JSON,

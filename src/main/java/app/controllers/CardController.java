@@ -124,12 +124,12 @@ public class CardController extends Controller {
         cardService.deletePackage(aPackage);
         user.setCoins(user.getCoins() - aPackage.getPrice());
         // TODO: USER IN CARD SERVICE ?
-        cardService.updateUser(user, user);
+        cardService.updateUser(user.getId(), user);
 
         for (Card card : cards) {
             card.setPackageId(null);
             card.setUserId(user.getId());
-            cardService.updateCard(card, card);
+            cardService.updateCard(card.getId(), card);
         }
 
         // TODO: ROLLBACK IF NOT ALL CARDS UPDATED
@@ -231,7 +231,7 @@ public class CardController extends Controller {
                 cardsInDeckBeforeTx = cardService.findAllCardsByDeckId(deck.getId());
                 for (Card c : cardsInDeckBeforeTx) {
                     c.setDeckId(null);
-                    cardService.updateCard(c, c);
+                    cardService.updateCard(c.getId(), c);
                 }
             }
 
@@ -282,12 +282,12 @@ public class CardController extends Controller {
 
             Card c = optionalCard.get();
             c.setDeckId(null);
-            cardService.updateCard(c, c);
+            cardService.updateCard(c.getId(), c);
         }
 
         for (Card c : cardsInDeckBeforeTx) {
             c.setDeckId(deck.getId());
-            cardService.updateCard(c, c);
+            cardService.updateCard(c.getId(), c);
         }
     }
 
@@ -307,9 +307,8 @@ public class CardController extends Controller {
             return forbidden;
         }
 
-        Card oldCard = new MonsterCard(card);
         card.setDeckId(deck.getId());
-        cardService.updateCard(oldCard, card);
+        cardService.updateCard(card.getId(), card);
 
         return new Response(
                 HttpStatus.OK,

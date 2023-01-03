@@ -30,13 +30,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(User oldUser, User updatedUser) {
-        userDao.update(oldUser, updatedUser);
+    public void updateUser(String username, User updatedUser) {
+        userDao.update(username, updatedUser);
     }
 
     @Override
     public void saveUser(User user) {
+        //TODO: Rollback on error?
         userDao.save(user);
+        statsDao.save(new Stats(user.getId()));
+        profileDao.save(new Profile(user.getId()));
     }
 
     @Override
@@ -45,8 +48,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateStats(Stats oldStats, Stats updatedStats) {
-       statsDao.update(oldStats, updatedStats);
+    public void updateStats(String userId, Stats updatedStats) {
+       statsDao.update(userId, updatedStats);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateProfile(Profile oldProfile, Profile updatedProfile) {
-        profileDao.update(oldProfile, updatedProfile);
+    public void updateProfile(String profileId, Profile updatedProfile) {
+        profileDao.update(profileId, updatedProfile);
     }
 }
