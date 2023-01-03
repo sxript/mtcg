@@ -90,7 +90,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void updateUser(String userId, User updatedUser) {
-        userDao.update(userId, updatedUser);
+    public void updateUser(String username, User updatedUser) {
+        userDao.update(username, updatedUser);
     }
 }

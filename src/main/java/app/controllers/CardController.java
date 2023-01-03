@@ -124,7 +124,7 @@ public class CardController extends Controller {
         cardService.deletePackage(aPackage);
         user.setCoins(user.getCoins() - aPackage.getPrice());
         // TODO: USER IN CARD SERVICE ?
-        cardService.updateUser(user.getId(), user);
+        cardService.updateUser(user.getUsername(), user);
 
         for (Card card : cards) {
             card.setPackageId(null);

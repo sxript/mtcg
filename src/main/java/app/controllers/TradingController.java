@@ -6,6 +6,7 @@ import app.models.Trade;
 import app.models.User;
 import app.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
@@ -77,6 +78,16 @@ public class TradingController extends Controller {
         }
 
         Trade trade = optionalTrade.get();
+        try {
+            JsonNode jsonNode = getObjectMapper().readTree(cardIdToTrade);
+            cardIdToTrade = jsonNode.asText();
+        } catch (JsonProcessingException e) {
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"error\": \"malformed request\"}"
+            );
+        }
         Optional<Card> optionalCardFromTrade = cardService.findCardById(trade.getCardId());
         Optional<Card> optionalCardToTrade = cardService.findCardById(cardIdToTrade);
 
@@ -115,9 +126,9 @@ public class TradingController extends Controller {
         cardService.updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
         cardService.updateCard(cardToTrade.getId(), cardToTradeUpdated);
         return new Response(
-               HttpStatus.OK,
-               ContentType.JSON,
-               "{ \"message\": \"Trading deal successfully executed\" }"
+                HttpStatus.OK,
+                ContentType.JSON,
+                "{ \"message\": \"Trading deal successfully executed\" }"
         );
     }
 

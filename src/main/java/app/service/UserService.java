@@ -10,7 +10,7 @@ public interface UserService {
     Optional<User> getUserByUsername(String username);
 
     // TODO: Update to use String oldUserId Updated User
-    void updateUser(String userId, User updatedUser);
+    void updateUser(String username, User updatedUser);
 
     void saveUser(User user);
 

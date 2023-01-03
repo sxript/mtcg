@@ -33,6 +33,6 @@ public interface CardService {
 
     void deletePackage(Package packageToDelete);
 
-    void updateUser(String userId, User updatedUser);
+    void updateUser(String username, User updatedUser);
 
 }
