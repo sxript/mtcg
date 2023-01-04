@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dto.QueueUser;
 import app.exceptions.InvalidDeckException;
 import app.models.User;
 import app.service.GameService;
@@ -13,16 +14,15 @@ import server.Response;
 import java.util.concurrent.*;
 
 public class BattleController {
-    private final BlockingQueue<User> blockingQueue = new LinkedBlockingQueue<>(1);
-    private final ConcurrentMap<String, BlockingQueue<Response>> userIdToResponse = new ConcurrentHashMap<>();
-    private final Arena arena = new Arena();
-
+    private final BlockingQueue<QueueUser> userGameQueue;
     private final GameService gameService = new GameServiceImpl();
 
+    public BattleController(BlockingQueue<QueueUser> userGameQueue) {
+       this.userGameQueue = userGameQueue;
+    }
+
     public Response battle(User user) {
-        System.out.println("Currently: " + blockingQueue.size() + " Users in Queue, in Thread: " + Thread.currentThread().getId());
-        User opponent;
-        Response response;
+        System.out.println("Currently: " + userGameQueue.size() + " Users in Queue, in Thread: " + Thread.currentThread().getId());
 
         try {
             gameService.battlePreCheck(user);
@@ -35,31 +35,14 @@ public class BattleController {
         }
 
         try {
-            boolean inGameQueue = false;
-            while (!inGameQueue) {
-                if (blockingQueue.remainingCapacity() > 0) {
-                    inGameQueue = blockingQueue.offer(user, 2, TimeUnit.SECONDS);
-                    if (inGameQueue) {
-                        BlockingQueue<Response> result = new LinkedBlockingQueue<>(1);
-                        userIdToResponse.put(user.getId(), result);
-                        Response res = result.take();
-                        userIdToResponse.remove(user.getId());
-                        return res;
-                    }
-                } else {
-                    opponent = blockingQueue.poll(500, TimeUnit.MILLISECONDS);
-                    if (opponent != null) {
-                        response = arena.battle(user, opponent);
-                        userIdToResponse.get(opponent.getId()).put(response);
-                        return response;
-                    }
-                }
-            }
+            QueueUser queueUser = new QueueUser(user);
+            userGameQueue.put(queueUser);
+
+            // Could change this to poll with a timeout so if something happens in a game, or it takes to long the user can still get a response
+            return queueUser.getResponseQueue().take();
         } catch (InterruptedException e) {
             e.printStackTrace();
             return CommonErrors.INTERNAL_SERVER_ERROR;
         }
-
-        return CommonErrors.INTERNAL_SERVER_ERROR;
     }
 }

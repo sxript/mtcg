@@ -1,6 +1,7 @@
 package app;
 
 import app.controllers.*;
+import app.dto.QueueUser;
 import app.models.User;
 import app.service.TokenServiceImpl;
 import app.service.UserServiceImpl;
@@ -13,6 +14,8 @@ import server.Request;
 import server.Response;
 import server.ServerApp;
 
+import java.util.concurrent.BlockingQueue;
+
 @Setter(AccessLevel.PRIVATE)
 @Getter(AccessLevel.PRIVATE)
 public class App implements ServerApp {
@@ -24,11 +27,11 @@ public class App implements ServerApp {
 
     private TokenServiceImpl tokenService = new TokenServiceImpl();
 
-    public App() {
+    public App(BlockingQueue<QueueUser> gameQueue) {
         setUserController(new UserController(new UserServiceImpl()));
         setCardController(new CardController());
         setGameController(new GameController());
-        setBattleController(new BattleController());
+        setBattleController(new BattleController(gameQueue));
         setTradingController(new TradingController());
     }
 
