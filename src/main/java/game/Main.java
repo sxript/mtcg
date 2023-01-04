@@ -1,6 +1,7 @@
 package game;
 
 import app.App;
+import app.controllers.BattleController;
 import app.dto.QueueUser;
 import app.models.*;
 import db.DBConnection;

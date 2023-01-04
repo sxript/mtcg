@@ -17,6 +17,8 @@ public class Arena {
     private final CardService cardService = new CardServiceImpl();
     private final UserService userService = new UserServiceImpl();
 
+    private final EloRater eloRater = new EloRater();
+
     public Response battle(User player1, User player2) {
         String winnerId = null;
 
@@ -46,12 +48,12 @@ public class Arena {
             System.out.println("Round: " + i + "   -----------------------------------------------------------------------------------------------------");
             if (p1DeckCards.isEmpty()) {
                 winnerId = player2.getId();
-                updateScore(player2Stats, player1Stats);
+                updateScore(player2Stats, player1Stats, false);
                 printWinner(player2);
                 break;
             } else if (p2DeckCards.isEmpty()) {
                 winnerId = player1.getId();
-                updateScore(player1Stats, player2Stats);
+                updateScore(player1Stats, player2Stats, false);
                 printWinner(player1);
                 break;
             }
@@ -88,11 +90,8 @@ public class Arena {
         updateDecks(p2DeckCards);
 
         if (winnerId == null) {
-            player1Stats.setDraws(player1Stats.getDraws() + 1);
-            player2Stats.setDraws(player2Stats.getDraws() + 1);
+            updateScore(player1Stats, player2Stats, true);
 
-            userService.updateStats(player1Stats.getUserId(), player1Stats);
-            userService.updateStats(player2Stats.getUserId(), player2Stats);
             System.out.println("THE GAME ENDED IN A DRAW");
             return new Response(
                     HttpStatus.OK,
@@ -109,9 +108,9 @@ public class Arena {
         );
     }
 
-   private Card createCopyCard(Card card) {
-       return card instanceof SpellCard ? new SpellCard(card) : new MonsterCard(card);
-   }
+    private Card createCopyCard(Card card) {
+        return card instanceof SpellCard ? new SpellCard(card) : new MonsterCard(card);
+    }
 
     private void handleRoundWin(User roundWinner, Deck winnerDeck, ArrayList<Card> loserCards, ArrayList<Card> winnerCards, Card loserPlayedCard, Card loserOriginCard, Card winnerPlayedCard, Card winnerOriginCard) {
         loserCards.remove(loserPlayedCard);
@@ -135,7 +134,7 @@ public class Arena {
 
     private void setSpecialities(Card c1, Card c2) {
         // If card one of the cards is a SpellCard call damageEffectiveness and set new damage
-        if (c1 instanceof SpellCard || c2 instanceof  SpellCard) {
+        if (c1 instanceof SpellCard || c2 instanceof SpellCard) {
             c1.setDamage(damageEffectiveness(c1, c2.getElementType()));
             c2.setDamage(damageEffectiveness(c2, c1.getElementType()));
         }
@@ -168,10 +167,11 @@ public class Arena {
     }
 
     public float damageEffectiveness(Card card, Element opponentElementType) {
-        if(card.getElementType() == opponentElementType) return card.getDamage();
-        else if(card.getElementType() == Element.FIRE && opponentElementType == Element.NORMAL
+        if (card.getElementType() == opponentElementType) return card.getDamage();
+        else if (card.getElementType() == Element.FIRE && opponentElementType == Element.NORMAL
                 || card.getElementType() == Element.WATER && opponentElementType == Element.FIRE
-                || card.getElementType() == Element.NORMAL && opponentElementType == Element.WATER) return 2 * card.getDamage();
+                || card.getElementType() == Element.NORMAL && opponentElementType == Element.WATER)
+            return 2 * card.getDamage();
 
         System.out.println("UNEFFECTIVE");
         return card.getDamage() / 2;
@@ -186,14 +186,17 @@ public class Arena {
         System.out.println("USER: " + user.getUsername() + " WON!");
     }
 
-    private void updateScore(Stats winner, Stats loser) {
-        // Update game counts
-        winner.setWins(winner.getWins() + 1);
-        loser.setLosses(loser.getLosses() + 1);
+    private void updateScore(Stats winner, Stats loser, Boolean isDraw) {
+        if (Boolean.TRUE.equals(isDraw)) {
+            winner.setDraws(winner.getDraws() + 1);
+            loser.setDraws(loser.getDraws() + 1);
+        } else {
+            // Update game counts
+            winner.setWins(winner.getWins() + 1);
+            loser.setLosses(loser.getLosses() + 1);
+        }
 
-        // Update elo
-        winner.setElo(winner.getElo() + 3);
-        loser.setElo(loser.getElo() - 5);
+        eloRater.calculateRating(winner, loser, isDraw);
 
         userService.updateStats(winner.getUserId(), winner);
         userService.updateStats(loser.getUserId(), loser);

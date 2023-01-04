@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 public class Stats {
-    private static final int START_ELO = 100;
+    private static final int START_ELO = 1000;
     private static final int START_WINS = 0;
     private static final int START_LOSSES = 0;
     private static final int START_DRAWS = 0;

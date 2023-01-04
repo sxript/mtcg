@@ -5,7 +5,6 @@ import app.exceptions.InvalidDeckException;
 import app.models.User;
 import app.service.GameService;
 import app.service.GameServiceImpl;
-import game.Arena;
 import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
