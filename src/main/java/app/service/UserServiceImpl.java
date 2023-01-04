@@ -3,6 +3,7 @@ package app.service;
 import app.dao.ProfileDao;
 import app.dao.StatsDao;
 import app.dao.UserDao;
+import app.exceptions.DBErrorException;
 import app.models.Profile;
 import app.models.Stats;
 import app.models.User;
@@ -30,16 +31,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(String username, User updatedUser) {
-        userDao.update(username, updatedUser);
+    public int updateUser(String username, User updatedUser) {
+        try {
+            return userDao.update(username, updatedUser);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 
     @Override
-    public void saveUser(User user) {
-        //TODO: Rollback on error?
-        userDao.save(user);
-        statsDao.save(new Stats(user.getId()));
-        profileDao.save(new Profile(user.getId()));
+    public void saveUser(User user) throws DBErrorException {
+        try {
+            userDao.save(user);
+            statsDao.save(new Stats(user.getId()));
+            profileDao.save(new Profile(user.getId()));
+        } catch (DBErrorException e) {
+            userDao.delete(user);
+            throw e;
+        }
     }
 
     @Override
@@ -48,8 +57,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateStats(String userId, Stats updatedStats) {
-       statsDao.update(userId, updatedStats);
+    public int updateStats(String userId, Stats updatedStats) {
+        try {
+            return statsDao.update(userId, updatedStats);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 
     @Override
@@ -58,12 +71,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void createProfile(Profile profile) {
-       profileDao.save(profile);
+    public int createProfile(Profile profile) throws DBErrorException {
+        return profileDao.save(profile);
     }
 
     @Override
-    public void updateProfile(String profileId, Profile updatedProfile) {
-        profileDao.update(profileId, updatedProfile);
+    public int updateProfile(String profileId, Profile updatedProfile) {
+        try {
+            return profileDao.update(profileId, updatedProfile);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 }

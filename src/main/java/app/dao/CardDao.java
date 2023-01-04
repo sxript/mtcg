@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import app.models.*;
 import db.DBConnection;
 import enums.Element;
@@ -76,7 +77,7 @@ public class CardDao implements Dao<Card> {
     }
 
     @Override
-    public void save(Card card) {
+    public int save(Card card) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Card"
                 (id, name, damage, element, package_id)
@@ -90,16 +91,15 @@ public class CardDao implements Dao<Card> {
             statement.setString(5, card.getPackageId());
 
             // Execute Query
-            int affectedColumns = statement.executeUpdate();
-//            System.out.println("AFFECTED: " + affectedColumns);
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    // TODO: UPDATE most of the time i call it with the same instance twice ?!?
-    public void update(String oldCardId, Card updatedCard) {
+    public int update(String oldCardId, Card updatedCard) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Card"
                 SET name = ?, damage = ?, element = ?::"Element", package_id = ?, user_id = ?, deck_id = ?
@@ -117,23 +117,25 @@ public class CardDao implements Dao<Card> {
             // USE CURRENT ID
             statement.setString(7, oldCardId);
 
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void delete(Card card) {
+    public int delete(Card card) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "Card"
                 WHERE id = ?;
                 """)
         ) {
             statement.setString(1, card.getId());
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 }

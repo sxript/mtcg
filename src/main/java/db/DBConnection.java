@@ -3,7 +3,6 @@ package db;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.postgresql.ds.PGPoolingDataSource;
 
 import java.io.Closeable;
 import java.sql.*;
@@ -58,7 +57,7 @@ public class DBConnection implements Closeable {
     public Connection getConnection() {
         if (connection == null) {
             try {
-                connection = DBConnection.getInstance().connect();
+                connection = connect();
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
@@ -70,26 +69,6 @@ public class DBConnection implements Closeable {
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         return getConnection().prepareStatement(sql);
     }
-
-    public boolean executeSql(String sql) throws SQLException {
-        return executeSql(getConnection(), sql, false);
-    }
-
-    public static boolean executeSql(Connection connection, String sql, boolean ignoreIfFails) throws SQLException {
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(sql);
-            return true;
-        } catch (SQLException e) {
-            if (!ignoreIfFails)
-                throw e;
-            return false;
-        }
-    }
-
-    public static boolean executeSql(Connection connection, String sql) throws SQLException {
-        return executeSql(connection, sql, false);
-    }
-
 
     @Override
     public void close() {

@@ -1,9 +1,8 @@
 package app.service;
 
 import app.dao.TradeDao;
+import app.exceptions.DBErrorException;
 import app.models.Trade;
-import lombok.AccessLevel;
-import lombok.Getter;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -30,12 +29,16 @@ public class TradingServiceImpl implements TradingService {
     }
 
     @Override
-    public void createTrade(Trade trade) {
-        tradeDao.save(trade);
+    public int createTrade(Trade trade) throws DBErrorException {
+            return tradeDao.save(trade);
     }
 
     @Override
-    public void deleteTrade(Trade trade) {
-        tradeDao.delete(trade);
+    public int deleteTrade(Trade trade) {
+        try {
+            return tradeDao.delete(trade);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 }

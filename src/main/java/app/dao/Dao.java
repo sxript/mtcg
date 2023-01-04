@@ -1,10 +1,10 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
+
 import java.util.Collection;
 import java.util.Optional;
 
-// TODO: REFACTOR THIS INTERFACE RETURN ALL THE TIME
-// TODO: HANDLE DAO ERRORS
 public interface Dao<T> {
     // READ
     Optional<T> get(String id);
@@ -12,11 +12,11 @@ public interface Dao<T> {
     Collection<T> getAll();
 
     // CREATE
-    void save(T t);
+    int save(T t) throws DBErrorException;
 
     // UPDATE
-    void update(String d, T t);
+    int update(String d, T t) throws DBErrorException;
 
     // DELETE
-    void delete(T t);
+    int delete(T t) throws DBErrorException;
 }

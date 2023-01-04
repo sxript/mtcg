@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import app.models.Profile;
 import db.DBConnection;
 
@@ -12,7 +13,6 @@ import java.util.Optional;
 
 public class ProfileDao implements Dao<Profile> {
 
-    // TODO: IF THERE IS A FAILED SQL STATMENT THEN STIL GETING 200 RESPONSE FOR EXAMPLE RENAMING USERID TO USER_ID
     @Override
     public Optional<Profile> get(String userId) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
@@ -52,7 +52,7 @@ public class ProfileDao implements Dao<Profile> {
     }
 
     @Override
-    public void save(Profile profile) {
+    public int save(Profile profile) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Profile"
                 (id, bio, image, userid)
@@ -65,15 +65,15 @@ public class ProfileDao implements Dao<Profile> {
             statement.setString(3, profile.getImage());
             statement.setString(4, profile.getUserId());
 
-            // TODO: HANDLE AFFECTED
-            int affectedColumns = statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void update(String profileId, Profile updatedProfile) {
+    public int update(String profileId, Profile updatedProfile) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Profile"
                 SET bio = ?, image = ?
@@ -87,23 +87,25 @@ public class ProfileDao implements Dao<Profile> {
             // USE CURRENT ID
             statement.setString(3, profileId);
 
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void delete(Profile profile) {
+    public int delete(Profile profile) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "Profile"
                 WHERE id = ?;
                 """)
         ) {
             statement.setString(1, profile.getId());
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 

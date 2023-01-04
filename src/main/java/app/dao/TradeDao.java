@@ -1,8 +1,8 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import app.models.Trade;
 import db.DBConnection;
-import enums.CardType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,7 +45,6 @@ public class TradeDao implements Dao<Trade> {
             if (resultSet.next()) {
                 return Optional.of(createTradeFromResultSet(resultSet));
             }
-            DBConnection.getInstance().getConnection().commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,7 +70,7 @@ public class TradeDao implements Dao<Trade> {
     }
 
     @Override
-    public void save(Trade trade) {
+    public int save(Trade trade) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Trade"
                 (id, card_id, type, min_damage)
@@ -83,15 +82,15 @@ public class TradeDao implements Dao<Trade> {
             statement.setString(3, trade.getCardType());
             statement.setInt(4, trade.getMinimumDamage());
 
-            // TODO: HANDLE AFFECTED
-            int affectedColumns = statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void update(String tradeId, Trade updatedTrade) {
+    public int update(String tradeId, Trade updatedTrade) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Trade"
                 SET card_id = ?, type = ?, min_damage = ?
@@ -106,23 +105,25 @@ public class TradeDao implements Dao<Trade> {
             // USE CURRENT ID
             statement.setString(4, tradeId);
 
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void delete(Trade trade) {
+    public int delete(Trade trade) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "Trade"
                 WHERE id = ?;
                 """)
         ) {
             statement.setString(1, trade.getId());
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 

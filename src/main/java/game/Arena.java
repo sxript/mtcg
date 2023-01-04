@@ -43,6 +43,7 @@ public class Arena {
         Stats player2Stats = optionalStatsPlayer2.get();
 
         for (int i = 0; i < MAX_ROUNDS; i++) {
+            System.out.println("Round: " + i + "   -----------------------------------------------------------------------------------------------------");
             if (p1DeckCards.isEmpty()) {
                 winnerId = player2.getId();
                 updateScore(player2Stats, player1Stats);
@@ -58,11 +59,9 @@ public class Arena {
             Card cP2 = drawCard(p2DeckCards);
 
             // Create Copy of Cards
-            Card player1CardCopy = new MonsterCard(cP1);
-            Card player2CardCopy = new MonsterCard(cP2);
+            Card player1CardCopy = createCopyCard(cP1);
+            Card player2CardCopy = createCopyCard(cP2);
 
-            System.out.println("CARD AFTER CLONE: " + player1CardCopy);
-            System.out.println("CARD AFTER CLONE: " + player2CardCopy);
 
             System.out.print(player1.getUsername() + ": " + cP1.getName() + " (" + cP1.getDamage() + " Damage) vs ");
             System.out.print(player2.getUsername() + ": " + cP2.getName() + " (" + cP2.getDamage() + " Damage) \n");
@@ -78,29 +77,10 @@ public class Arena {
                 p2DeckCards.add(player2CardCopy);
             } else if (cP1.getDamage() < cP2.getDamage()) {
                 System.out.println("Player 2 Card is stronger");
-                // Delete the card that is in the deck
-                p1DeckCards.remove(cP1);
-                p2DeckCards.add(player1CardCopy);
-
-                p2DeckCards.remove(cP2);
-                p2DeckCards.add(player2CardCopy);
-
-                player1CardCopy.setUserId(player2.getId());
-                player1CardCopy.setDeckId(p2Deck.getId());
-                System.out.println("COPIED CARD: " + player1CardCopy);
-                cardService.updateCard(player1CardCopy.getId(), player1CardCopy);
+                handleRoundWin(player2, p2Deck, p1DeckCards, p2DeckCards, cP1, player1CardCopy, cP2, player2CardCopy);
             } else {
                 System.out.println("Player 1 Card is stronger");
-                p2DeckCards.remove(cP2);
-                p1DeckCards.add(player2CardCopy);
-
-                p1DeckCards.remove(cP1);
-                p1DeckCards.add(player1CardCopy);
-
-                player2CardCopy.setUserId(player1.getId());
-                player2CardCopy.setDeckId(p1Deck.getId());
-                System.out.println("COPIED CARD: " + player2CardCopy);
-                cardService.updateCard(player2CardCopy.getId(), player2CardCopy);
+                handleRoundWin(player1, p1Deck, p2DeckCards, p1DeckCards, cP2, player2CardCopy, cP1, player1CardCopy);
             }
         }
 
@@ -129,6 +109,23 @@ public class Arena {
         );
     }
 
+   private Card createCopyCard(Card card) {
+       return card instanceof SpellCard ? new SpellCard(card) : new MonsterCard(card);
+   }
+
+    private void handleRoundWin(User roundWinner, Deck winnerDeck, ArrayList<Card> loserCards, ArrayList<Card> winnerCards, Card loserPlayedCard, Card loserOriginCard, Card winnerPlayedCard, Card winnerOriginCard) {
+        loserCards.remove(loserPlayedCard);
+        winnerCards.add(loserOriginCard);
+
+        winnerCards.remove(winnerPlayedCard);
+        winnerCards.add(winnerOriginCard);
+
+        loserOriginCard.setUserId(roundWinner.getId());
+        loserOriginCard.setDeckId(winnerDeck.getId());
+        System.out.println(roundWinner.getUsername() + " WON --> CARD: " + loserOriginCard);
+        cardService.updateCard(loserOriginCard.getId(), loserOriginCard);
+    }
+
     private void updateDecks(List<Card> cards) {
         cards.forEach(card -> {
             card.setDeckId(null);
@@ -137,13 +134,10 @@ public class Arena {
     }
 
     private void setSpecialities(Card c1, Card c2) {
-        // If card is a SpellCard call damageEffectiveness to and set new damage
-        if (c1 instanceof SpellCard spellCard) {
-            float dmg = spellCard.damageEffectiveness(c2.getElementType());
-            c1.setDamage(dmg);
-        } else if (c2 instanceof SpellCard spellCard) {
-            float dmg = spellCard.damageEffectiveness(c1.getElementType());
-            c2.setDamage(dmg);
+        // If card one of the cards is a SpellCard call damageEffectiveness and set new damage
+        if (c1 instanceof SpellCard || c2 instanceof  SpellCard) {
+            c1.setDamage(damageEffectiveness(c1, c2.getElementType()));
+            c2.setDamage(damageEffectiveness(c2, c1.getElementType()));
         }
 
         // Set specialities using two tuples the KEY Tuple contains the STRENGTH
@@ -171,6 +165,16 @@ public class Arena {
         if (isSecondCheck) return;
         // SAME CHECK ONLY VICE VERSA
         considerSpecialties(c2, c1, strength, strengthElement, weakness, weaknessElement, true);
+    }
+
+    public float damageEffectiveness(Card card, Element opponentElementType) {
+        if(card.getElementType() == opponentElementType) return card.getDamage();
+        else if(card.getElementType() == Element.FIRE && opponentElementType == Element.NORMAL
+                || card.getElementType() == Element.WATER && opponentElementType == Element.FIRE
+                || card.getElementType() == Element.NORMAL && opponentElementType == Element.WATER) return 2 * card.getDamage();
+
+        System.out.println("UNEFFECTIVE");
+        return card.getDamage() / 2;
     }
 
 

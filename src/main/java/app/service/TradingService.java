@@ -1,5 +1,6 @@
 package app.service;
 
+import app.exceptions.DBErrorException;
 import app.models.Trade;
 
 import java.util.Collection;
@@ -10,7 +11,7 @@ public interface TradingService {
 
     Collection<Trade> findAllTrades();
 
-    void createTrade(Trade trade);
+    int createTrade(Trade trade) throws DBErrorException;
 
-    void deleteTrade(Trade trade);
+    int deleteTrade(Trade trade);
 }

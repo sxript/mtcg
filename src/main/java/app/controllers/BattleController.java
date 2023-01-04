@@ -35,14 +35,16 @@ public class BattleController {
         }
 
         try {
-            boolean stopLoop = false;
-            while (!stopLoop) {
+            boolean inGameQueue = false;
+            while (!inGameQueue) {
                 if (blockingQueue.remainingCapacity() > 0) {
-                    stopLoop = blockingQueue.offer(user, 2, TimeUnit.SECONDS);
-                    if (stopLoop) {
+                    inGameQueue = blockingQueue.offer(user, 2, TimeUnit.SECONDS);
+                    if (inGameQueue) {
                         BlockingQueue<Response> result = new LinkedBlockingQueue<>(1);
                         userIdToResponse.put(user.getId(), result);
-                        return result.take();
+                        Response res = result.take();
+                        userIdToResponse.remove(user.getId());
+                        return res;
                     }
                 } else {
                     opponent = blockingQueue.poll(500, TimeUnit.MILLISECONDS);

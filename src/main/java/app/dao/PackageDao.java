@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import app.models.Package;
 import db.DBConnection;
 
@@ -38,7 +39,7 @@ public class PackageDao implements Dao<Package> {
     }
 
     @Override
-    public void save(Package aPackage) {
+    public int save(Package aPackage) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Package"
                 (id, price)
@@ -49,29 +50,30 @@ public class PackageDao implements Dao<Package> {
             statement.setString(1, aPackage.getId());
             statement.setInt(2, aPackage.getPrice());
 
-            // TODO: HANDLE AFFECTED
-            int affectedColumns = statement.executeUpdate();
+            return  statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void update(String packageId, Package updatedPackage) {
-
+    public int update(String packageId, Package updatedPackage) {
+        return 0;
     }
 
     @Override
-    public void delete(Package aPackage) {
+    public int delete(Package aPackage) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "Package"
                 WHERE id = ?;
                 """)
         ) {
             statement.setString(1, aPackage.getId());
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 

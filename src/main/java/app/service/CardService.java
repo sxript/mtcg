@@ -1,5 +1,6 @@
 package app.service;
 
+import app.exceptions.DBErrorException;
 import app.models.*;
 import app.models.Package;
 
@@ -15,23 +16,21 @@ public interface CardService {
 
     Collection<Card> findAllCardsByPackageId(String packageId);
 
-    void saveCard(Card card);
+    int saveCard(Card card) throws DBErrorException;
 
-    void deleteCard(Card card);
+    int deleteCard(Card card);
 
-    void updateCard(String cardId, Card newCard);
+    int updateCard(String cardId, Card newCard);
 
     Optional<Deck> findDeckByUserId(String userId);
 
-    void saveDeck(Deck deck);
+    int saveDeck(Deck deck) throws DBErrorException;
 
     Optional<Package> findFirstPackage();
 
-    void createPackage(Package packageToCreate);
+    int createPackage(Package packageToCreate) throws DBErrorException;
 
-    void deletePackage(Package packageToDelete);
-
-    void updateUser(String username, User updatedUser);
+    int deletePackage(Package packageToDelete);
 
     Optional<Trade> findTradeByCardId(String cardId);
 }

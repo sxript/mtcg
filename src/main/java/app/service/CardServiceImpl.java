@@ -1,6 +1,7 @@
 package app.service;
 
 import app.dao.*;
+import app.exceptions.DBErrorException;
 import app.models.*;
 import app.models.Package;
 
@@ -11,19 +12,17 @@ public class CardServiceImpl implements CardService {
     private final CardDao cardDao;
     private final PackageDao packageDao;
     private final DeckDao deckDao;
-    private final UserDao userDao;
     private final TradeDao tradeDao;
 
-    public CardServiceImpl(CardDao cardDao, PackageDao packageDao, DeckDao deckDao, UserDao userDao, TradeDao tradeDao) {
+    public CardServiceImpl(CardDao cardDao, PackageDao packageDao, DeckDao deckDao, TradeDao tradeDao) {
         this.cardDao = cardDao;
         this.packageDao = packageDao;
         this.deckDao = deckDao;
-        this.userDao = userDao;
         this.tradeDao = tradeDao;
     }
 
     public CardServiceImpl() {
-       this(new CardDao(), new PackageDao(), new DeckDao(), new UserDao(), new TradeDao());
+       this(new CardDao(), new PackageDao(), new DeckDao(), new TradeDao());
     }
 
     @Override
@@ -47,18 +46,26 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void saveCard(Card card) {
-        cardDao.save(card);
+    public int saveCard(Card card) throws DBErrorException {
+        return cardDao.save(card);
     }
 
     @Override
-    public void deleteCard(Card card) {
-        cardDao.delete(card);
+    public int deleteCard(Card card) {
+        try {
+            return cardDao.delete(card);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 
     @Override
-    public void updateCard(String cardId, Card newCard) {
-        cardDao.update(cardId, newCard);
+    public int updateCard(String cardId, Card newCard) {
+        try {
+            return cardDao.update(cardId, newCard);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 
     @Override
@@ -67,8 +74,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void saveDeck(Deck deck) {
-        deckDao.save(deck);
+    public int saveDeck(Deck deck) throws DBErrorException {
+        return deckDao.save(deck);
     }
 
     @Override
@@ -77,18 +84,17 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void createPackage(Package packageToCreate) {
-        packageDao.save(packageToCreate);
+    public int createPackage(Package packageToCreate) throws DBErrorException {
+        return packageDao.save(packageToCreate);
     }
 
     @Override
-    public void deletePackage(Package packageToDelete) {
-        packageDao.delete(packageToDelete);
-    }
-
-    @Override
-    public void updateUser(String username, User updatedUser) {
-        userDao.update(username, updatedUser);
+    public int deletePackage(Package packageToDelete) {
+        try {
+            return packageDao.delete(packageToDelete);
+        } catch (DBErrorException e) {
+            return 0;
+        }
     }
 
     @Override

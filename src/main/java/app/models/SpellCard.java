@@ -19,14 +19,4 @@ public class SpellCard extends Card {
         this(card.getId(), card.getName(), card.getDamage(), card.getElementType(), card.getPackageId(), card.getUserId(), card.getDeckId());
     }
 
-    // TODO: TAKE THIS OUT
-    public float damageEffectiveness(Element opponentElementType) {
-        if(this.getElementType() == opponentElementType) return getDamage();
-        else if(this.getElementType() == Element.FIRE && opponentElementType == Element.NORMAL
-            || this.getElementType() == Element.WATER && opponentElementType == Element.FIRE
-            || this.getElementType() == Element.NORMAL && opponentElementType == Element.WATER) return 2 * getDamage();
-
-        System.out.println("UNEFFECTIVE");
-        return getDamage() / 2;
-    }
 }

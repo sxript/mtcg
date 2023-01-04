@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import app.models.Deck;
 import db.DBConnection;
 
@@ -59,7 +60,7 @@ public class DeckDao implements Dao<Deck> {
     }
 
     @Override
-    public void save(Deck deck) {
+    public int save(Deck deck) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Deck"
                 (id, user_id)
@@ -70,29 +71,30 @@ public class DeckDao implements Dao<Deck> {
             statement.setString(1, deck.getId());
             statement.setString(2, deck.getUserId());
 
-            // TODO: HANDLE AFFECTED
-            int affectedColumns = statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void update(String deckId, Deck updatedDeck) {
-
+    public int update(String deckId, Deck updatedDeck) {
+        return 0;
     }
 
     @Override
-    public void delete(Deck deck) {
+    public int delete(Deck deck) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "Deck"
                 WHERE id = ?;
                 """)
         ) {
             statement.setString(1, deck.getId());
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 }

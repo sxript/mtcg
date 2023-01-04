@@ -1,8 +1,7 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import db.DBConnection;
-import app.models.Profile;
-import app.models.Stats;
 import app.models.User;
 
 import java.sql.PreparedStatement;
@@ -69,7 +68,7 @@ public class UserDao implements Dao<User> {
     }
 
     @Override
-    public void save(User user) {
+    public int save(User user) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "User"
                 (id, name, username, password, coins)
@@ -83,15 +82,15 @@ public class UserDao implements Dao<User> {
             statement.setInt(5, user.getCoins());
 
             // Execute Query
-            // TODO: EXECUTE UPDATE
-            statement.execute();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void update(String username, User updatedUser) {
+    public int update(String username, User updatedUser) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "User"
                 SET name = ?, username = ?, password = ?, coins = ?
@@ -107,23 +106,25 @@ public class UserDao implements Dao<User> {
             // USE CURRENT USERNAME
             statement.setString(5, username);
 
-            statement.execute();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void delete(User user) {
+    public int delete(User user) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "User"
                 WHERE username = ?;
                 """)
         ) {
             statement.setString(1, user.getUsername());
-            statement.execute();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 

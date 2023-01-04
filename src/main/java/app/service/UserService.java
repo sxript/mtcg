@@ -1,5 +1,6 @@
 package app.service;
 
+import app.exceptions.DBErrorException;
 import app.models.Profile;
 import app.models.Stats;
 import app.models.User;
@@ -9,17 +10,17 @@ import java.util.Optional;
 public interface UserService {
     Optional<User> getUserByUsername(String username);
 
-    void updateUser(String username, User updatedUser);
+    int updateUser(String username, User updatedUser);
 
-    void saveUser(User user);
+    void saveUser(User user) throws DBErrorException;
 
     Optional<Stats> findStatsByUserId(String userId);
 
-    void updateStats(String statsId, Stats updatedStats);
+    int updateStats(String statsId, Stats updatedStats);
 
     Optional<Profile> findProfileByUserId(String userId);
 
-    void createProfile(Profile profile);
+    int createProfile(Profile profile) throws DBErrorException;
 
-    void updateProfile(String profileId, Profile updatedProfile);
+    int updateProfile(String profileId, Profile updatedProfile);
 }

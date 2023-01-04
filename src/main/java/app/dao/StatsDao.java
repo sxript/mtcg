@@ -1,5 +1,6 @@
 package app.dao;
 
+import app.exceptions.DBErrorException;
 import app.models.Stats;
 import db.DBConnection;
 
@@ -33,11 +34,6 @@ public class StatsDao implements Dao<Stats> {
     @Override
     public Collection<Stats> getAll() {
         ArrayList<Stats> result = new ArrayList<>();
-//        SELECT "Stats".id, "User".name, elo, wins, losses, "Stats".userid
-//        FROM "Stats"
-//        JOIN "User"
-//        ON "Stats".userid = "User".id
-//        ORDER BY elo DESC;
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, elo, wins, losses, draws, userid
                 FROM "Stats"
@@ -55,7 +51,7 @@ public class StatsDao implements Dao<Stats> {
     }
 
     @Override
-    public void save(Stats stats) {
+    public int save(Stats stats) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Stats"
                 (id, elo, wins, losses, draws, userid)
@@ -70,15 +66,15 @@ public class StatsDao implements Dao<Stats> {
             statement.setInt(5, stats.getDraws());
             statement.setString(6, stats.getUserId());
 
-            // TODO: HANDLE AFFECTED
-            int affectedColumns = statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void update(String userId, Stats updatedStats) {
+    public int update(String userId, Stats updatedStats) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Stats"
                 SET elo = ?, wins = ?, losses = ?, draws = ?
@@ -94,23 +90,25 @@ public class StatsDao implements Dao<Stats> {
             // USE CURRENT ID
             statement.setString(5, userId);
 
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 
     @Override
-    public void delete(Stats stats) {
+    public int delete(Stats stats) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 DELETE FROM "Stats"
                 WHERE userid = ?;
                 """)
         ) {
             statement.setString(1, stats.getUserId());
-            statement.executeUpdate();
+            return statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new DBErrorException(e.getMessage());
         }
     }
 

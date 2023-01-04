@@ -1,10 +1,13 @@
 package app.controllers;
 
 import app.exceptions.CustomJsonProcessingException;
+import app.exceptions.DBErrorException;
 import app.models.*;
 import app.models.Package;
 import app.service.CardService;
 import app.service.CardServiceImpl;
+import app.service.UserService;
+import app.service.UserServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,24 +20,28 @@ import java.util.*;
 
 public class CardController extends Controller {
     private final CardService cardService;
+    private final UserService userService;
 
-    public CardController(CardService cardService) {
+    public CardController(CardService cardService, UserService userService) {
         this.cardService = cardService;
+        this.userService = userService;
     }
 
     public CardController() {
-        this(new CardServiceImpl());
+        this(new CardServiceImpl(), new UserServiceImpl());
     }
 
     // POST /packages
     public Response createCard(User user, String rawCard) {
-        if(user == null || !user.isAdmin()) {
+        if (user == null || !user.isAdmin()) {
             return CommonErrors.TOKEN_ERROR;
         }
 
         Package newPackage = new Package();
         String packageId = newPackage.getId();
-        cardService.createPackage(newPackage);
+
+        Response res = handleCreatePackage(newPackage);
+        if(res != null) return res;
 
         Card card;
 
@@ -82,8 +89,22 @@ public class CardController extends Controller {
         }
 
         card.setPackageId(packageId);
-        cardService.saveCard(card);
-
+        try {
+            int createdRows = cardService.saveCard(card);
+            if (createdRows == 0) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ \"error\": \"Could not create card\"}"
+                );
+            }
+        } catch (DBErrorException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong: " + e.getMessage() + "\"}"
+            );
+        }
         return new Response(
                 HttpStatus.CREATED,
                 ContentType.JSON,
@@ -117,16 +138,21 @@ public class CardController extends Controller {
             );
         }
 
-        // TODO: HANDLE DELETE ERRORS AND OVERALL MAKE IT POSSIBLE TO HANDLE IN CONTROLLER
-        // TODO: IF DELETE FAILED UNDO THE DELETE
-        // TODO: ON ROLLBACK GIVE BACK COINS
         Collection<Card> cards = cardService.findAllCardsByPackageId(packageId);
-        cardService.deletePackage(aPackage);
+        int deletedRows = cardService.deletePackage(aPackage);
+        if (deletedRows == 0) {
+            return new Response(
+                    HttpStatus.GONE,
+                    ContentType.JSON,
+                    "{ \"error\": \"Oops it looks this package is not available anymore\"}"
+            );
+        }
         user.setCoins(user.getCoins() - aPackage.getPrice());
-        // TODO: USER IN CARD SERVICE ?
-        cardService.updateUser(user.getUsername(), user);
+        userService.updateUser(user.getUsername(), user);
 
+        ArrayList<Card> cardsChangedInTx = new ArrayList<>();
         for (Card card : cards) {
+            cardsChangedInTx.add(new MonsterCard(card));
             card.setPackageId(null);
             card.setUserId(user.getId());
             cardService.updateCard(card.getId(), card);
@@ -173,7 +199,7 @@ public class CardController extends Controller {
 
     // GET /decks
     public Response getDeck(User user) {
-        if(user == null) {
+        if (user == null) {
             return CommonErrors.TOKEN_ERROR;
         }
 
@@ -236,20 +262,21 @@ public class CardController extends Controller {
 
             Deck tempDeck = new Deck(user.getId());
             if (deck == null) {
-                cardService.saveDeck(tempDeck);
+                Response res = handleCreateDeck(tempDeck);
+                if (res != null) return res;
             }
 
             deck = deck == null ? tempDeck : deck;
             Set<String> cardsAddedToDeck = new HashSet<>();
             for (JsonNode node : jsonNode) {
                 String cardId = node.asText();
-                if(cardService.findTradeByCardId(cardId).isPresent()) {
-                   rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
-                   return new Response(
-                           HttpStatus.CONFLICT,
-                           ContentType.JSON,
-                           "{ \"error\": \"Card with the Id " + cardId + " is locked\"}"
-                   );
+                if (cardService.findTradeByCardId(cardId).isPresent()) {
+                    rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
+                    return new Response(
+                            HttpStatus.CONFLICT,
+                            ContentType.JSON,
+                            "{ \"error\": \"Card with the Id " + cardId + " is locked\"}"
+                    );
                 }
                 if (cardsAddedToDeck.contains(cardId)) {
                     rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
@@ -280,6 +307,46 @@ public class CardController extends Controller {
                     "{ \"error\": \"Could not parse " + e.getMessage() + "\", \"data\": " + deckJSON + " }"
             );
         }
+    }
+
+    private Response handleCreatePackage(Package packageToCreate) {
+        try {
+            int createdRows = cardService.createPackage(packageToCreate);
+            if (createdRows == 0) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ \"error\": \"Could not create Deck\"}"
+                );
+            }
+        } catch (DBErrorException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong: " + e.getMessage() + "\"}"
+            );
+        }
+        return null;
+    }
+
+    private Response handleCreateDeck(Deck tempDeck) {
+        try {
+            int createdRows = cardService.saveDeck(tempDeck);
+            if (createdRows == 0) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ \"error\": \"Could not create Deck\"}"
+                );
+            }
+        } catch (DBErrorException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong: " + e.getMessage() + "\"}"
+            );
+        }
+        return null;
     }
 
     private void rollbackUserDeck(Deck deck, Collection<String> cardIdsAddedToDeck, Collection<Card> cardsInDeckBeforeTx) {

@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.dto.UserStatsProfileDTO;
+import app.exceptions.DBErrorException;
 import app.models.Profile;
 import app.models.Stats;
 import app.models.User;
@@ -64,7 +65,15 @@ public class UserController extends Controller {
             );
         }
 
-        userService.saveUser(user);
+        try {
+            userService.saveUser(user);
+        } catch (DBErrorException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Could not create User:"+ e.getMessage() +"\""
+            );
+        }
         return new Response(
                 HttpStatus.CREATED,
                 ContentType.JSON,
@@ -146,7 +155,22 @@ public class UserController extends Controller {
         Profile profile;
         if(optionalProfile.isEmpty()) {
             profile = new Profile(user.getId());
-            userService.createProfile(profile);
+            try {
+                int affectedRows = userService.createProfile(profile);
+                if (affectedRows == 0) {
+                    return new Response(
+                            HttpStatus.BAD_REQUEST,
+                            ContentType.JSON,
+                            "{ \"error\": \"Could not created Profile\" }"
+                    );
+                }
+            } catch (DBErrorException e) {
+                return new Response(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        ContentType.JSON,
+                        "{ \"error\": \"Something went wrong: "+ e.getMessage() +"\"}"
+                );
+            }
         } else profile = optionalProfile.get();
         profile.setBio(updatedUser.getProfile().getBio());
         profile.setImage(updatedUser.getProfile().getImage());

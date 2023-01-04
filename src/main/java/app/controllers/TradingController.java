@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.exceptions.DBErrorException;
 import app.models.Card;
 import app.models.MonsterCard;
 import app.models.Trade;
@@ -102,6 +103,15 @@ public class TradingController extends Controller {
         Card cardFromTrade = optionalCardFromTrade.get();
         Card cardToTrade = optionalCardToTrade.get();
 
+        Optional<Trade> tradeWithCardToTrade = cardService.findTradeByCardId(cardToTrade.getId());
+        if (tradeWithCardToTrade.isPresent()) {
+            return new Response(
+                    HttpStatus.CONFLICT,
+                    ContentType.JSON,
+                    "{ \"error\": \"The Provided Card is already locked in another Trade\" }"
+            );
+        }
+
         if (Objects.equals(cardFromTrade.getUserId(), cardToTrade.getUserId()) ||
                 !Objects.equals(cardToTrade.getUserId(), user.getId()) ||
                 cardToTrade.getDeckId() != null ||
@@ -114,8 +124,14 @@ public class TradingController extends Controller {
             );
         }
 
-        // TODO: WHAT IF TRADE NOT HERE ANYMORE?
-        tradingService.deleteTrade(trade);
+        int deletedRows = tradingService.deleteTrade(trade);
+        if (deletedRows == 0) {
+            return new Response(
+                    HttpStatus.GONE,
+                    ContentType.JSON,
+                    "{ \"error\": \"Oops it looks like this trade is not available anymore\"}"
+            );
+        }
 
         Card cardFromTradeUpdated = new MonsterCard(cardFromTrade);
         Card cardToTradeUpdated = new MonsterCard(cardToTrade);
@@ -163,7 +179,14 @@ public class TradingController extends Controller {
             }
         }
 
-        tradingService.deleteTrade(trade);
+        int deletedRows = tradingService.deleteTrade(trade);
+        if (deletedRows == 0) {
+            return new Response(
+                    HttpStatus.GONE,
+                    ContentType.JSON,
+                    "{ \"error\": \"Trading deal already deleted\"}"
+            );
+        }
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -223,7 +246,23 @@ public class TradingController extends Controller {
             return notOwnerOrLockedResponse;
         }
 
-        tradingService.createTrade(trade);
+        try {
+            int createdRows = tradingService.createTrade(trade);
+            if (createdRows == 0) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ \"error\": \"Could not create Trade\"}"
+                );
+            }
+        } catch (DBErrorException e) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong: " + e.getMessage() + "\"}"
+            );
+        }
+
         return new Response(
                 HttpStatus.CREATED,
                 ContentType.JSON,
