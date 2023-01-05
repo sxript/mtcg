@@ -24,7 +24,6 @@ public class Main {
         service.start();
 
         // TODO: CARD DESCRIPTION
-        // TODO: WIN / LOSE RATIO
 
         // TODO: UPDATE DB
         // TODO: CREATE WEIRD ?type=plain thingy
