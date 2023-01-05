@@ -3,7 +3,6 @@ package app.models;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Getter

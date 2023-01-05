@@ -10,9 +10,6 @@ import app.models.Card;
 import app.models.Deck;
 import app.models.Stats;
 import app.models.User;
-import http.ContentType;
-import http.HttpStatus;
-import server.Response;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -187,15 +187,6 @@ public class Arena {
     }
 
     private void updateScore(Stats winner, Stats loser, Boolean isDraw) {
-        if (Boolean.TRUE.equals(isDraw)) {
-            winner.setDraws(winner.getDraws() + 1);
-            loser.setDraws(loser.getDraws() + 1);
-        } else {
-            // Update game counts
-            winner.setWins(winner.getWins() + 1);
-            loser.setLosses(loser.getLosses() + 1);
-        }
-
         eloRater.calculateRating(winner, loser, isDraw);
 
         userService.updateStats(winner.getUserId(), winner);

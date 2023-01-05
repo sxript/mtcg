@@ -1,11 +1,7 @@
-package game;
-
 import app.App;
-import app.controllers.BattleController;
 import app.dto.QueueUser;
-import app.models.*;
 import db.DBConnection;
-import enums.Element;
+import game.GameQueueConsumer;
 import server.Server;
 
 import java.util.concurrent.BlockingQueue;
@@ -26,5 +22,11 @@ public class Main {
         App app = new App(gameQueue);
         Thread service = new Thread(new Server(app, 7777));
         service.start();
+
+        // TODO: CARD DESCRIPTION
+        // TODO: WIN / LOSE RATIO
+
+        // TODO: UPDATE DB
+        // TODO: CREATE WEIRD ?type=plain thingy
     }
 }

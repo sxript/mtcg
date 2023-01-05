@@ -1,7 +1,6 @@
 package app.models;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import enums.CardType;
 import lombok.*;
 
 @Getter

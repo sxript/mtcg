@@ -37,7 +37,7 @@ public class GameController extends Controller {
 
         if(optionalUserStatsDTO.isEmpty()) {
             return new Response(
-                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.NOT_FOUND,
                     ContentType.JSON,
                     "{ \"error\": \"No user with Id: "+ user.getId() + " found\" }"
             );

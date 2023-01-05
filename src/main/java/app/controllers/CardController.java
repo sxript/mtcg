@@ -32,7 +32,7 @@ public class CardController extends Controller {
     }
 
     // POST /packages
-    public Response createCard(User user, String rawCard) {
+    public Response createPackage(User user, String rawCard) {
         if (user == null || !user.isAdmin()) {
             return CommonErrors.TOKEN_ERROR;
         }
@@ -51,7 +51,7 @@ public class CardController extends Controller {
                 ArrayList<String> createdCards = new ArrayList<>();
                 for (JsonNode node : obj) {
                     card = parseCard(getObjectMapper().writeValueAsString(node));
-                    Response response = createCard(card, packageId);
+                    Response response = createPackage(card, packageId);
                     if (response.getStatusCode() < 200 || response.getStatusCode() > 299) {
                         rollBackCardInsert(createdCards, newPackage);
                         throw new CustomJsonProcessingException("Card parsing failed");
@@ -75,10 +75,10 @@ public class CardController extends Controller {
             );
         }
 
-        return createCard(card, packageId);
+        return createPackage(card, packageId);
     }
 
-    private Response createCard(Card card, String packageId) {
+    private Response createPackage(Card card, String packageId) {
         Optional<Card> optionalCard = cardService.findCardById(card.getId());
         if (optionalCard.isPresent()) {
             return new Response(
@@ -158,7 +158,6 @@ public class CardController extends Controller {
             cardService.updateCard(card.getId(), card);
         }
 
-        // TODO: ROLLBACK IF NOT ALL CARDS UPDATED
         try {
             return new Response(
                     HttpStatus.OK,
@@ -205,19 +204,23 @@ public class CardController extends Controller {
 
         Optional<Deck> optionalDeck = cardService.findDeckByUserId(user.getId());
 
-        Deck deck = new Deck(user.getId());
+        Deck deck;
+
+        Response noContentResponse = new Response(
+                HttpStatus.NO_CONTENT,
+                ContentType.JSON,
+                "{ \"message\": \"Deck is empty\", \"data\": []}"
+        );
+
         if (optionalDeck.isPresent()) {
             deck = optionalDeck.get();
-        }
+        } else return noContentResponse;
+
 
         Collection<Card> cardDeck = cardService.findAllCardsByDeckId(deck.getId());
         try {
             if (cardDeck.isEmpty()) {
-                return new Response(
-                        HttpStatus.NO_CONTENT,
-                        ContentType.JSON,
-                        "{ \"message\": \"Deck is empty\", \"data\": " + getObjectMapper().writeValueAsString(cardDeck) + "}"
-                );
+                return noContentResponse;
             }
             return new Response(
                     HttpStatus.OK,

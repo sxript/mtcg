@@ -50,7 +50,6 @@ public class UserController extends Controller {
                    "{ \"error\": \" Username and/or Password are required and can not be blank or contain any spaces \", \"data\": " + rawUser + "}"
            );
        }
-
        return createUser(new User(user.getUsername(), user.getPassword()));
     }
 

@@ -61,7 +61,7 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/sessions")) {
                     return getUserController().loginUser(request.getBody());
                 } else if (request.getPathName().equals("/packages")) {
-                    return getCardController().createCard(user, request.getBody());
+                    return getCardController().createPackage(user, request.getBody());
                 } else if (request.getPathName().equals("/transactions/packages")) {
                     return getCardController().acquirePackage(user);
                 } else if (request.getPathName().equals("/battles")) {

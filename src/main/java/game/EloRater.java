@@ -17,6 +17,18 @@ public class EloRater {
 
         int updatedRatingB = (int) Math.round(statsB.getElo() + kFactorB * (scoreB - expectedValueB));
         statsB.setElo(updatedRatingB);
+
+        updateGameCounts(statsA, statsB, isDraw);
+    }
+
+    private void updateGameCounts(Stats winner, Stats loser, boolean isDraw) {
+        if (Boolean.TRUE.equals(isDraw)) {
+            winner.setDraws(winner.getDraws() + 1);
+            loser.setDraws(loser.getDraws() + 1);
+        } else {
+            winner.setWins(winner.getWins() + 1);
+            loser.setLosses(loser.getLosses() + 1);
+        }
     }
 
     private double calculateExpectedValue(double ratingA, double ratingB) {
@@ -26,7 +38,7 @@ public class EloRater {
     private int calculateKFactor(Stats stats) {
         int totalGames = stats.getDraws() + stats.getLosses() + stats.getWins();
         int elo = stats.getElo();
-        if(totalGames < 30) {
+        if (totalGames < 30) {
             return 40;
         } else if (elo < 2400) {
             return 20;
