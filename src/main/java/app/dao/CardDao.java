@@ -19,7 +19,7 @@ public class CardDao implements Dao<Card> {
     public Optional<Card> get(String id) {
 
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, name, damage, element, package_id, user_id, deck_id
+                SELECT id, name, damage, element, description, package_id, user_id, deck_id
                 FROM "Card"
                 WHERE id = ?;
                 """)
@@ -43,7 +43,7 @@ public class CardDao implements Dao<Card> {
     public Collection<Card> getAllByPackageUserDeckId(String packageId, String userId, String deckId) {
         ArrayList<Card> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, name, damage, element, package_id, user_id, deck_id
+                SELECT id, name, damage, element, description, package_id, user_id, deck_id
                 FROM "Card"
                 WHERE package_id = ? OR user_id = ? OR deck_id = ?;
                 """)
@@ -60,7 +60,6 @@ public class CardDao implements Dao<Card> {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        // TODO: https://stackoverflow.com/questions/15031866/jdbc-does-call-to-rollback-method-have-effect-only-if-call-to-commit-method
         return result;
     }
 
@@ -70,9 +69,10 @@ public class CardDao implements Dao<Card> {
         card.setName(resultSet.getString(2));
         card.setDamage(resultSet.getFloat(3));
         card.setElementType(Element.valueOf(resultSet.getString(4)));
-        card.setPackageId(resultSet.getString(5));
-        card.setUserId(resultSet.getString(6));
-        card.setDeckId(resultSet.getString(7));
+        card.setDescription(resultSet.getString(5));
+        card.setPackageId(resultSet.getString(6));
+        card.setUserId(resultSet.getString(7));
+        card.setDeckId(resultSet.getString(8));
         return card;
     }
 
@@ -80,15 +80,16 @@ public class CardDao implements Dao<Card> {
     public int save(Card card) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Card"
-                (id, name, damage, element, package_id)
-                VALUES (?, ?, ?, ?::"Element", ?)
+                (id, name, damage, element, description, package_id)
+                VALUES (?, ?, ?, ?::"Element", ?, ?)
                 """)) {
             // Insert Into User
             statement.setString(1, card.getId());
             statement.setString(2, card.getName());
             statement.setFloat(3, card.getDamage());
             statement.setString(4, card.getElementType().name());
-            statement.setString(5, card.getPackageId());
+            statement.setString(5, card.getDescription());
+            statement.setString(6, card.getPackageId());
 
             // Execute Query
             return statement.executeUpdate();
@@ -102,7 +103,7 @@ public class CardDao implements Dao<Card> {
     public int update(String oldCardId, Card updatedCard) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Card"
-                SET name = ?, damage = ?, element = ?::"Element", package_id = ?, user_id = ?, deck_id = ?
+                SET name = ?, damage = ?, element = ?::"Element", description = ?, package_id = ?, user_id = ?, deck_id = ?
                 WHERE id = ?
                 """)
         ) {
@@ -110,12 +111,13 @@ public class CardDao implements Dao<Card> {
             statement.setString(1, updatedCard.getName());
             statement.setFloat(2, updatedCard.getDamage());
             statement.setString(3, updatedCard.getElementType().name());
-            statement.setString(4, updatedCard.getPackageId());
-            statement.setString(5, updatedCard.getUserId());
-            statement.setString(6, updatedCard.getDeckId());
+            statement.setString(4, updatedCard.getDescription());
+            statement.setString(5, updatedCard.getPackageId());
+            statement.setString(6, updatedCard.getUserId());
+            statement.setString(7, updatedCard.getDeckId());
 
             // USE CURRENT ID
-            statement.setString(7, oldCardId);
+            statement.setString(8, oldCardId);
 
             return statement.executeUpdate();
         } catch (SQLException e) {

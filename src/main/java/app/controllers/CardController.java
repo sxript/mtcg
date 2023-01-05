@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dto.UserStatsProfileDTO;
 import app.exceptions.CustomJsonProcessingException;
 import app.exceptions.DBErrorException;
 import app.models.*;
@@ -41,7 +42,7 @@ public class CardController extends Controller {
         String packageId = newPackage.getId();
 
         Response res = handleCreatePackage(newPackage);
-        if(res != null) return res;
+        if (res != null) return res;
 
         Card card;
 
@@ -194,6 +195,51 @@ public class CardController extends Controller {
             e.printStackTrace();
             return CommonErrors.INTERNAL_SERVER_ERROR;
         }
+    }
+
+    // PATCH /cards/:cardId
+    public Response updateCard(User user, String cardId, String rawCard) {
+        if (user == null || !user.isAdmin()) {
+            return CommonErrors.TOKEN_ERROR;
+        }
+
+        Card card;
+
+        try {
+            card = parseSimpleCard(rawCard);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return new Response(
+                    HttpStatus.BAD_REQUEST,
+                    ContentType.JSON,
+                    "{ \"error\": \"Could not parse\", \"data\": " + rawCard + " }"
+            );
+        }
+
+        return updateCard(cardId, card);
+    }
+
+    private Response updateCard(String cardId, Card card) {
+        Optional<Card> optionalCard = cardService.findCardById(cardId);
+
+        if (optionalCard.isEmpty()) {
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.JSON,
+                    "{ \"error\": \"Could not find any card with the provided id\"}"
+            );
+        }
+
+        Card toUpdate = optionalCard.get();
+
+        toUpdate.setDescription(card.getDescription());
+
+        cardService.updateCard(toUpdate.getId(), toUpdate);
+        return new Response(
+                HttpStatus.OK,
+                ContentType.JSON,
+                "{ \"message\": \"Successfully updated Card description\"}"
+        );
     }
 
     // GET /decks
@@ -401,6 +447,22 @@ public class CardController extends Controller {
         }
 
         cardService.deletePackage(newPackage);
+    }
+
+    private Card parseSimpleCard(String rawCard) throws JsonProcessingException {
+        JsonNode jsonNode = getObjectMapper().readTree(rawCard);
+        if (!jsonNode.has("type")) {
+            String name;
+            if (jsonNode.has("Name")) {
+                name = jsonNode.get("Name").asText();
+            } else if (jsonNode.has("name")) {
+                name = jsonNode.get("name").asText();
+            } else name = "";
+
+            ((ObjectNode) jsonNode).put("type", name.toLowerCase(Locale.ROOT).contains("spell") ? "spell" : "monster");
+            rawCard = getObjectMapper().writeValueAsString(jsonNode);
+        }
+        return getObjectMapper().readValue(rawCard, Card.class);
     }
 
     private Card parseCard(String rawCard) throws JsonProcessingException {

@@ -11,12 +11,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SpellCard extends Card {
 
-    public SpellCard(String id, String name, float damage, Element elementType, String packageId, String userId, String deckId) {
-        super(id , name, damage, elementType, packageId, userId, deckId);
+    public SpellCard(String id, String name, float damage, Element elementType, String description, String packageId, String userId, String deckId) {
+        super(id , name, damage, elementType, description, packageId, userId, deckId);
     }
 
     public SpellCard(Card card) {
-        this(card.getId(), card.getName(), card.getDamage(), card.getElementType(), card.getPackageId(), card.getUserId(), card.getDeckId());
+        this(card.getId(), card.getName(), card.getDamage(), card.getElementType(), card.getDescription(), card.getPackageId(), card.getUserId(), card.getDeckId());
     }
 
 }

@@ -58,11 +58,11 @@ class TradingControllerTest {
     @Test
     void completeTrade_WithCardLockedInTrade_ShouldReturnConflict() {
         Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", user.getId(), "");
+        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", user.getId(), "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
         String cardIdToTrade = "\"cardId2\"";
-        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "userId2", "");
+        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "", "userId2", "");
 
         when(cardService.findCardById(trade.getCardId())).thenReturn(Optional.of(cardFromTrade));
         when(cardService.findCardById(cardToTrade.getId())).thenReturn(Optional.of(cardToTrade));
@@ -78,11 +78,11 @@ class TradingControllerTest {
     @Test
     void completeTrade_WithOwnCard_ShouldReturnForbidden() {
         Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", user.getId(), "");
+        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE,"","", user.getId(), "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
         String cardIdToTrade = "\"cardId2\"";
-        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", user.getId(), "");
+        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "", user.getId(), "");
 
         when(cardService.findCardById(trade.getCardId())).thenReturn(Optional.of(cardFromTrade));
         when(cardService.findCardById(cardToTrade.getId())).thenReturn(Optional.of(cardToTrade));
@@ -96,11 +96,11 @@ class TradingControllerTest {
     @Test
     void completeTrade_WithNotOwningCard_ShouldReturnForbidden() {
         Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", user.getId(), "");
+        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", user.getId(), "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
         String cardIdToTrade = "\"cardId2\"";
-        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "ID_FROM_OTHER_USER", "");
+        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "", "ID_FROM_OTHER_USER", "");
 
         when(cardService.findCardById(trade.getCardId())).thenReturn(Optional.of(cardFromTrade));
         when(cardService.findCardById(cardToTrade.getId())).thenReturn(Optional.of(cardToTrade));
@@ -114,11 +114,11 @@ class TradingControllerTest {
     @Test
     void completeTrade_WithCardLockedInDeck_ShouldReturnForbidden() {
         Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "USER_ID_FROM_TRADER", "");
+        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", "USER_ID_FROM_TRADER", "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
         String cardIdToTrade = "\"cardId2\"";
-        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", user.getId(), "DECK_ID");
+        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "", user.getId(), "DECK_ID");
 
         when(cardService.findCardById(trade.getCardId())).thenReturn(Optional.of(cardFromTrade));
         when(cardService.findCardById(cardToTrade.getId())).thenReturn(Optional.of(cardToTrade));
@@ -132,11 +132,11 @@ class TradingControllerTest {
     @Test
     void completeTrade_WithValidCard_ShouldReturnOk() {
         Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "USER_ID_FROM_TRADER", "");
+        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", "USER_ID_FROM_TRADER", "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
         String cardIdToTrade = "\"cardId2\"";
-        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", user.getId(), null);
+        Card cardToTrade = new MonsterCard("cardId2", "dragon", 35, Element.FIRE, "", "", user.getId(), null);
 
         when(cardService.findCardById(trade.getCardId())).thenReturn(Optional.of(cardFromTrade));
         when(cardService.findCardById(cardToTrade.getId())).thenReturn(Optional.of(cardToTrade));
@@ -152,7 +152,7 @@ class TradingControllerTest {
     @Test
     void deleteTrade_WithDifferentUser_ShouldReturnForbidden() {
         Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard(trade.getCardId(), "goblin", 10, Element.FIRE, "", "USER_ID_FROM_TRADER", null);
+        Card cardFromTrade = new MonsterCard(trade.getCardId(), "goblin", 10, Element.FIRE, "", "", "USER_ID_FROM_TRADER", null);
 
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
         when(cardService.findCardById(cardFromTrade.getId())).thenReturn(Optional.of(cardFromTrade));

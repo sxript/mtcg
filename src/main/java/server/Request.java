@@ -70,7 +70,7 @@ public class Request {
                     }
                 }
 
-                if (getMethod() == Method.POST || getMethod() == Method.PUT) {
+                if (getMethod() == Method.POST || getMethod() == Method.PUT || getMethod() == Method.PATCH) {
                     int asciiChar;
                     for (int i = 0; i < getContentLength(); i++) {
                         asciiChar = inputStream.read();

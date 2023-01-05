@@ -1,6 +1,7 @@
 package app.models;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import enums.Element;
@@ -8,6 +9,7 @@ import lombok.*;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 @Getter
@@ -34,6 +36,10 @@ public abstract class Card {
     @JsonAlias({"Element"})
     private Element elementType = Element.NORMAL;
 
+    @JsonSetter()
+    @JsonAlias({"Description"})
+    private String description = "";
+
     @JsonAlias({"package_id"})
     private String packageId;
 
@@ -43,7 +49,7 @@ public abstract class Card {
     @JsonAlias({"deck_id"})
     private String deckId;
 
-    protected Card(String id, String name, float damage, Element elementType, String packageId, String userId, String deckId) {
+    protected Card(String id, String name, float damage, Element elementType, String description, String packageId, String userId, String deckId) {
         setId(id);
         setName(name);
         setDamage(damage);
@@ -51,6 +57,7 @@ public abstract class Card {
         setPackageId(packageId);
         setUserId(userId);
         setDeckId(deckId);
+        setDescription(description);
     }
 
     protected Card(Card card) {
@@ -61,6 +68,7 @@ public abstract class Card {
         setPackageId(card.getPackageId());
         setUserId(card.getUserId());
         setDeckId(card.getDeckId());
+        setDescription(card.getDescription());
     }
 
     public void setName(String name) {

@@ -65,7 +65,7 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/transactions/packages")) {
                     return getCardController().acquirePackage(user);
                 } else if (request.getPathName().equals("/battles")) {
-                   return getBattleController().battle(user);
+                    return getBattleController().battle(user);
                 } else if (request.getPathName().equals("/tradings")) {
                     return getTradingController().createTrade(user, request.getBody());
                 } else if (request.getBasePath().equals("/tradings") && request.getPathParams().size() == 1) {
@@ -83,6 +83,12 @@ public class App implements ServerApp {
             case DELETE: {
                 if (request.getBasePath().equals("/tradings") && request.getPathParams().size() == 1) {
                     return getTradingController().deleteTrade(user, request.getPathParams().get(0));
+                }
+                break;
+            }
+            case PATCH: {
+                if (request.getBasePath().equals("/cards") && request.getPathParams().size() == 1) {
+                    return getCardController().updateCard(user, request.getPathParams().get(0), request.getBody());
                 }
                 break;
             }
