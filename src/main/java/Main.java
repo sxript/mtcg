@@ -23,7 +23,6 @@ public class Main {
         Thread service = new Thread(new Server(app, 7777));
         service.start();
 
-        // TODO: UPDATE DB
         // TODO: CREATE WEIRD ?type=plain thingy
     }
 }

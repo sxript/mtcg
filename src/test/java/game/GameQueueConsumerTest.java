@@ -2,6 +2,7 @@ package game;
 
 import app.dto.QueueUser;
 import app.models.User;
+import app.service.BattleService;
 import app.service.CardService;
 import app.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +25,8 @@ class GameQueueConsumerTest {
         this.gameQueue = new LinkedBlockingQueue<>();
         CardService cardService = mock(CardService.class);
         UserService userService = mock(UserService.class);
-
-        Arena arena = new Arena(cardService, userService);
+        BattleService battleService = mock(BattleService.class);
+        Arena arena = new Arena(cardService, userService, battleService);
         GameQueueConsumer gameQueueConsumer = new GameQueueConsumer(gameQueue, arena);
 
         Thread t = new Thread(gameQueueConsumer);

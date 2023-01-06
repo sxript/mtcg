@@ -52,6 +52,8 @@ public class App implements ServerApp {
                     return getGameController().getScoreboard();
                 } else if (request.getPathName().equals("/tradings")) {
                     return getTradingController().getAllTrades(user);
+                } else if (request.getBasePath().equals("/battles") && request.getPathParams().size() == 1) {
+                   return getBattleController().getBattleLog(request.getPathParams().get(0));
                 }
                 break;
             }

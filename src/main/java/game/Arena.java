@@ -1,7 +1,10 @@
 package game;
 
+import app.controllers.Controller;
+import app.models.Round;
 import app.models.*;
 import app.service.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import enums.Element;
 import helper.CommonErrors;
 import helper.Tuple;
@@ -11,24 +14,28 @@ import server.Response;
 
 import java.util.*;
 
-public class Arena {
+public class Arena extends Controller {
     private static final Random rnd = new Random();
     private static final int MAX_ROUNDS = 100;
     private final CardService cardService;
     private final UserService userService;
+    private final BattleService battleService;
 
-    public Arena (CardService cardService, UserService userService) {
+    public Arena(CardService cardService, UserService userService, BattleService battleService) {
         this.cardService = cardService;
         this.userService = userService;
+        this.battleService = battleService;
     }
 
     public Arena() {
-        this(new CardServiceImpl(), new UserServiceImpl());
+        this(new CardServiceImpl(), new UserServiceImpl(), new BattleServiceImpl());
     }
 
     private final EloRater eloRater = new EloRater();
 
     public Response battle(User player1, User player2) {
+        String gameId = UUID.randomUUID().toString();
+        List<Round> battlelog = new ArrayList<>();
         String winnerId = null;
 
         Optional<Deck> optionalDeckP1 = cardService.findDeckByUserId(player1.getId());
@@ -54,6 +61,7 @@ public class Arena {
         Stats player2Stats = optionalStatsPlayer2.get();
 
         for (int i = 0; i < MAX_ROUNDS; i++) {
+            Round currentRound = new Round(i + 1);
             System.out.println("Round: " + i + "   -----------------------------------------------------------------------------------------------------");
             if (p1DeckCards.isEmpty()) {
                 winnerId = player2.getId();
@@ -74,12 +82,15 @@ public class Arena {
             Card player2CardCopy = createCopyCard(cP2);
 
 
+            currentRound.getMessages().add(player1.getUsername() + ": " + cP1.getName() + " (" + cP1.getDamage() + " Damage) vs " + player2.getUsername() + ": " + cP2.getName() + " (" + cP2.getDamage() + " Damage)");
             System.out.print(player1.getUsername() + ": " + cP1.getName() + " (" + cP1.getDamage() + " Damage) vs ");
             System.out.print(player2.getUsername() + ": " + cP2.getName() + " (" + cP2.getDamage() + " Damage) \n");
 
             setSpecialities(cP1, cP2);
-            System.out.println("Damage C1: " + cP1.getDamage() + " Damage C2: " + cP2.getDamage());
+            currentRound.getMessages().add("NEW Damage Card 1: " + cP1.getDamage() + " vs NEW Damage Card 2: " + cP2.getDamage());
+            System.out.println("NEW Damage Card 1: " + cP1.getDamage() + " vs NEW Damage Card 2: " + cP2.getDamage());
             if (cP1.getDamage() == cP2.getDamage()) {
+                currentRound.getMessages().add("THIS ROUND IS A DRAW BOTH CARDS HAVE SAME DMG");
                 System.out.println("THIS ROUND IS A DRAW BOTH CARDS HAVE SAME DMG");
                 p1DeckCards.remove(cP1);
                 p2DeckCards.remove(cP2);
@@ -87,33 +98,42 @@ public class Arena {
                 p1DeckCards.add(player1CardCopy);
                 p2DeckCards.add(player2CardCopy);
             } else if (cP1.getDamage() < cP2.getDamage()) {
+                currentRound.getMessages().add("Player 2 Card is stronger");
                 System.out.println("Player 2 Card is stronger");
                 handleRoundWin(player2, p2Deck, p1DeckCards, p2DeckCards, cP1, player1CardCopy, cP2, player2CardCopy);
             } else {
+                currentRound.getMessages().add("Player 1 Card is stronger");
                 System.out.println("Player 1 Card is stronger");
                 handleRoundWin(player1, p1Deck, p2DeckCards, p1DeckCards, cP2, player2CardCopy, cP1, player1CardCopy);
             }
+            battlelog.add(currentRound);
         }
 
         updateDecks(p1DeckCards);
         updateDecks(p2DeckCards);
+        String battleLogJson;
+
+        try {
+            battleLogJson = getObjectMapper().writeValueAsString(battlelog);
+            battleService.createBattleLog(new BattleLog(gameId, battleLogJson, winnerId == null ? "THE GAME ENDED IN A DRAW" : "The User with the ID: " + winnerId + " won"));
+        } catch (JsonProcessingException e) {
+            return CommonErrors.INTERNAL_SERVER_ERROR;
+        }
 
         if (winnerId == null) {
             updateScore(player1Stats, player2Stats, true);
-
             System.out.println("THE GAME ENDED IN A DRAW");
             return new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    "{ \"message\": \"The Game ended in a draw\"}"
+                    "{ \"game_id\": \""+ gameId + "\", \"message\": \"The Game ended in a draw\", \"battlelog\": " + battleLogJson + "}"
             );
         }
-
 
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
-                "{ \"message\": \"The User with the ID: " + winnerId + " won the game\"}"
+                "{ \"game_id\": \""+ gameId +"\", \"message\": \"The User with the ID: " + winnerId + " won the game\", \"battlelog\": " + battleLogJson + "}"
         );
     }
 
