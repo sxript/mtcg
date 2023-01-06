@@ -7,10 +7,15 @@ import java.util.concurrent.BlockingQueue;
 
 public class GameQueueConsumer implements Runnable {
     private final BlockingQueue<QueueUser> queue;
-    private final Arena arena = new Arena();
+    private final Arena arena;
+
+    public GameQueueConsumer(BlockingQueue<QueueUser> queue, Arena arena) {
+        this.queue = queue;
+        this.arena = arena;
+    }
 
     public GameQueueConsumer(BlockingQueue<QueueUser> queue) {
-        this.queue = queue;
+        this(queue, new Arena());
     }
 
     private void matchmaking() {

@@ -14,8 +14,17 @@ import java.util.*;
 public class Arena {
     private static final Random rnd = new Random();
     private static final int MAX_ROUNDS = 100;
-    private final CardService cardService = new CardServiceImpl();
-    private final UserService userService = new UserServiceImpl();
+    private final CardService cardService;
+    private final UserService userService;
+
+    public Arena (CardService cardService, UserService userService) {
+        this.cardService = cardService;
+        this.userService = userService;
+    }
+
+    public Arena() {
+        this(new CardServiceImpl(), new UserServiceImpl());
+    }
 
     private final EloRater eloRater = new EloRater();
 

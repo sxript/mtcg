@@ -2,6 +2,8 @@ package game;
 
 import app.dto.QueueUser;
 import app.models.User;
+import app.service.CardService;
+import app.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.Response;
@@ -12,14 +14,19 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class GameQueueConsumerTest {
     private BlockingQueue<QueueUser> gameQueue;
 
     @BeforeEach
     void init() {
-        gameQueue = new LinkedBlockingQueue<>();
-        GameQueueConsumer gameQueueConsumer = new GameQueueConsumer(gameQueue);
+        this.gameQueue = new LinkedBlockingQueue<>();
+        CardService cardService = mock(CardService.class);
+        UserService userService = mock(UserService.class);
+
+        Arena arena = new Arena(cardService, userService);
+        GameQueueConsumer gameQueueConsumer = new GameQueueConsumer(gameQueue, arena);
 
         Thread t = new Thread(gameQueueConsumer);
         t.start();
