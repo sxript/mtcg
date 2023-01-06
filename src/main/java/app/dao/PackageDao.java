@@ -15,7 +15,7 @@ public class PackageDao implements Dao<Package> {
     public Optional<Package> get(String id) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, price
-                FROM "Package"
+                FROM Package
                 WHERE id = ?;
                 """)
         ) {
@@ -41,7 +41,7 @@ public class PackageDao implements Dao<Package> {
     @Override
     public int save(Package aPackage) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "Package"
+                INSERT INTO Package
                 (id, price)
                 VALUES (?, ?)
                 """)) {
@@ -65,7 +65,7 @@ public class PackageDao implements Dao<Package> {
     @Override
     public int delete(Package aPackage) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "Package"
+                DELETE FROM Package
                 WHERE id = ?;
                 """)
         ) {
@@ -80,7 +80,7 @@ public class PackageDao implements Dao<Package> {
     public Optional<Package> getFirst() {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, price
-                FROM "Package"
+                FROM Package
                 LIMIT 1;
                 """)
         ) {

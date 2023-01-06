@@ -16,7 +16,7 @@ public class TradeDao implements Dao<Trade> {
     public Optional<Trade> get(String id) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, card_id, type, min_damage, coins
-                FROM "Trade"
+                FROM Trade
                 WHERE id = ?;
                 """)
         ) {
@@ -35,7 +35,7 @@ public class TradeDao implements Dao<Trade> {
     public Optional<Trade> getByCardId(String cardId) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, card_id, type, min_damage, coins
-                FROM "Trade"
+                FROM Trade
                 WHERE card_id = ?;
                 """)
         ) {
@@ -56,7 +56,7 @@ public class TradeDao implements Dao<Trade> {
         ArrayList<Trade> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, card_id, type, min_damage, coins
-                FROM "Trade";
+                FROM Trade;
                 """)
         ) {
             ResultSet resultSet = statement.executeQuery();
@@ -72,7 +72,7 @@ public class TradeDao implements Dao<Trade> {
     @Override
     public int save(Trade trade) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "Trade"
+                INSERT INTO Trade
                 (id, card_id, type, min_damage, coins)
                 VALUES (?, ?, ?, ?, ?);
                 """)) {
@@ -93,7 +93,7 @@ public class TradeDao implements Dao<Trade> {
     @Override
     public int update(String tradeId, Trade updatedTrade) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                UPDATE "Trade"
+                UPDATE Trade
                 SET card_id = ?, type = ?, min_damage = ?, coins = ?
                 WHERE id = ?
                 """)
@@ -117,7 +117,7 @@ public class TradeDao implements Dao<Trade> {
     @Override
     public int delete(Trade trade) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "Trade"
+                DELETE FROM Trade
                 WHERE id = ?;
                 """)
         ) {

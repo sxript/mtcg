@@ -16,7 +16,7 @@ public class StatsDao implements Dao<Stats> {
     public Optional<Stats> get(String userId) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, elo, wins, losses, draws, userid
-                FROM "Stats"
+                FROM Stats
                 WHERE userid = ?;
                 """)
         ) {
@@ -36,7 +36,7 @@ public class StatsDao implements Dao<Stats> {
         ArrayList<Stats> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, elo, wins, losses, draws, userid
-                FROM "Stats"
+                FROM Stats
                 ORDER BY elo DESC;
                 """)
         ) {
@@ -53,7 +53,7 @@ public class StatsDao implements Dao<Stats> {
     @Override
     public int save(Stats stats) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "Stats"
+                INSERT INTO Stats
                 (id, elo, wins, losses, draws, userid)
                 VALUES (?, ?, ?, ?, ?, ?);
                 """)) {
@@ -76,7 +76,7 @@ public class StatsDao implements Dao<Stats> {
     @Override
     public int update(String userId, Stats updatedStats) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                UPDATE "Stats"
+                UPDATE Stats
                 SET elo = ?, wins = ?, losses = ?, draws = ?
                 WHERE userid = ?
                 """)
@@ -100,7 +100,7 @@ public class StatsDao implements Dao<Stats> {
     @Override
     public int delete(Stats stats) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "Stats"
+                DELETE FROM Stats
                 WHERE userid = ?;
                 """)
         ) {

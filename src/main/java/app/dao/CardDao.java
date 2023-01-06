@@ -17,10 +17,9 @@ public class CardDao implements Dao<Card> {
 
     @Override
     public Optional<Card> get(String id) {
-
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, name, damage, element, description, package_id, user_id, deck_id
-                FROM "Card"
+                FROM Card
                 WHERE id = ?;
                 """)
         ) {
@@ -44,7 +43,7 @@ public class CardDao implements Dao<Card> {
         ArrayList<Card> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, name, damage, element, description, package_id, user_id, deck_id
-                FROM "Card"
+                FROM Card
                 WHERE package_id = ? OR user_id = ? OR deck_id = ?;
                 """)
         ) {
@@ -79,9 +78,9 @@ public class CardDao implements Dao<Card> {
     @Override
     public int save(Card card) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "Card"
+                INSERT INTO Card
                 (id, name, damage, element, description, package_id)
-                VALUES (?, ?, ?, ?::"Element", ?, ?)
+                VALUES (?, ?, ?, ?::Element, ?, ?)
                 """)) {
             // Insert Into User
             statement.setString(1, card.getId());
@@ -102,8 +101,8 @@ public class CardDao implements Dao<Card> {
     @Override
     public int update(String oldCardId, Card updatedCard) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                UPDATE "Card"
-                SET name = ?, damage = ?, element = ?::"Element", description = ?, package_id = ?, user_id = ?, deck_id = ?
+                UPDATE Card
+                SET name = ?, damage = ?, element = ?::Element, description = ?, package_id = ?, user_id = ?, deck_id = ?
                 WHERE id = ?
                 """)
         ) {
@@ -129,7 +128,7 @@ public class CardDao implements Dao<Card> {
     @Override
     public int delete(Card card) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "Card"
+                DELETE FROM Card
                 WHERE id = ?;
                 """)
         ) {

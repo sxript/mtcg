@@ -36,7 +36,7 @@ public class DeckDao implements Dao<Deck> {
     public Optional<Deck> getByUserId(String userId) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, user_id
-                FROM "Deck"
+                FROM Deck
                 WHERE user_id = ?;
                 """)
         ) {
@@ -62,7 +62,7 @@ public class DeckDao implements Dao<Deck> {
     @Override
     public int save(Deck deck) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "Deck"
+                INSERT INTO Deck
                 (id, user_id)
                 VALUES (?, ?)
                 """)) {
@@ -86,7 +86,7 @@ public class DeckDao implements Dao<Deck> {
     @Override
     public int delete(Deck deck) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "Deck"
+                DELETE FROM Deck
                 WHERE id = ?;
                 """)
         ) {

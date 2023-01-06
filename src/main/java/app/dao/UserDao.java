@@ -16,7 +16,7 @@ public class UserDao implements Dao<User> {
     public Optional<User> get(String username) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, name, username, password, coins
-                FROM "User"
+                FROM Users
                 WHERE username=?
                 """)
         ) {
@@ -34,7 +34,7 @@ public class UserDao implements Dao<User> {
     public Optional<User> getById(String id) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, name, username, password, coins
-                FROM "User"
+                FROM Users
                 WHERE id=?
                 """)
         ) {
@@ -54,7 +54,7 @@ public class UserDao implements Dao<User> {
         ArrayList<User> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, name, username, password, coins
-                FROM "User"
+                FROM Users
                 """)
         ) {
             ResultSet resultSet = statement.executeQuery();
@@ -70,7 +70,7 @@ public class UserDao implements Dao<User> {
     @Override
     public int save(User user) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "User"
+                INSERT INTO Users
                 (id, name, username, password, coins)
                 VALUES (?, ?, ?, ?, ?)
                 """)) {
@@ -92,7 +92,7 @@ public class UserDao implements Dao<User> {
     @Override
     public int update(String username, User updatedUser) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                UPDATE "User"
+                UPDATE Users
                 SET name = ?, username = ?, password = ?, coins = ?
                 WHERE username = ?
                 """)
@@ -116,7 +116,7 @@ public class UserDao implements Dao<User> {
     @Override
     public int delete(User user) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "User"
+                DELETE FROM Users
                 WHERE username = ?;
                 """)
         ) {

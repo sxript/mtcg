@@ -17,7 +17,7 @@ public class ProfileDao implements Dao<Profile> {
     public Optional<Profile> get(String userId) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, bio, image, userid
-                FROM "Profile"
+                FROM Profile
                 WHERE userid = ?;
                 """)
         ) {
@@ -38,7 +38,7 @@ public class ProfileDao implements Dao<Profile> {
         ArrayList<Profile> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 SELECT id, bio, image, userid
-                FROM "Profile";
+                FROM Profile;
                 """)
         ) {
             ResultSet resultSet = statement.executeQuery();
@@ -54,7 +54,7 @@ public class ProfileDao implements Dao<Profile> {
     @Override
     public int save(Profile profile) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                INSERT INTO "Profile"
+                INSERT INTO Profile
                 (id, bio, image, userid)
                 VALUES (?, ?, ?, ?);
                 """)) {
@@ -75,7 +75,7 @@ public class ProfileDao implements Dao<Profile> {
     @Override
     public int update(String profileId, Profile updatedProfile) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                UPDATE "Profile"
+                UPDATE Profile
                 SET bio = ?, image = ?
                 WHERE id = ?
                 """)
@@ -97,7 +97,7 @@ public class ProfileDao implements Dao<Profile> {
     @Override
     public int delete(Profile profile) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                DELETE FROM "Profile"
+                DELETE FROM Profile
                 WHERE id = ?;
                 """)
         ) {
