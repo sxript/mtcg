@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface UserService {
     Optional<User> getUserByUsername(String username);
+    Optional<User> findUserById(String id);
 
     int updateUser(String username, User updatedUser);
 

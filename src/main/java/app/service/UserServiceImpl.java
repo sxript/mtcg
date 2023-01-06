@@ -31,6 +31,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findUserById(String id) {
+        return userDao.getById(id);
+    }
+
+    @Override
     public int updateUser(String username, User updatedUser) {
         try {
             return userDao.update(username, updatedUser);

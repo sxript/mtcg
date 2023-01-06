@@ -25,14 +25,16 @@ public class TradingController extends Controller {
     @Getter(AccessLevel.PRIVATE)
     private final CardService cardService;
     private final TradingService tradingService;
+    private final UserService userService;
 
-    public TradingController(TradingService tradingService, CardService cardService) {
+    public TradingController(TradingService tradingService, CardService cardService, UserService userService) {
         this.tradingService = tradingService;
         this.cardService = cardService;
+        this.userService = userService;
     }
 
     public TradingController() {
-        this(new TradingServiceImpl(), new CardServiceImpl());
+        this(new TradingServiceImpl(), new CardServiceImpl(), new UserServiceImpl());
     }
 
     // GET /tradings
@@ -92,7 +94,7 @@ public class TradingController extends Controller {
         Optional<Card> optionalCardFromTrade = cardService.findCardById(trade.getCardId());
         Optional<Card> optionalCardToTrade = cardService.findCardById(cardIdToTrade);
 
-        if (optionalCardFromTrade.isEmpty() || optionalCardToTrade.isEmpty()) {
+        if (optionalCardFromTrade.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
                     ContentType.JSON,
@@ -101,6 +103,17 @@ public class TradingController extends Controller {
         }
 
         Card cardFromTrade = optionalCardFromTrade.get();
+        if (trade.getCoins() != null) {
+            return executeCoinTrade(cardFromTrade, user, trade);
+        }
+
+        if (optionalCardToTrade.isEmpty()) {
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.JSON,
+                    "{ \"error\": \"The card in the trade or the provided card could not be found\"}"
+            );
+        }
         Card cardToTrade = optionalCardToTrade.get();
 
         Optional<Trade> tradeWithCardToTrade = cardService.findTradeByCardId(cardToTrade.getId());
@@ -112,18 +125,74 @@ public class TradingController extends Controller {
             );
         }
 
-        if (Objects.equals(cardFromTrade.getUserId(), cardToTrade.getUserId()) ||
-                !Objects.equals(cardToTrade.getUserId(), user.getId()) ||
-                cardToTrade.getDeckId() != null ||
-                cardToTrade.getDamage() < trade.getMinimumDamage() ||
+        if (Objects.equals(cardFromTrade.getUserId(), cardToTrade.getUserId()) || !Objects.equals(cardToTrade.getUserId(), user.getId())
+                || cardToTrade.getDeckId() != null) {
+            return new Response(
+                    HttpStatus.FORBIDDEN,
+                    ContentType.JSON,
+                    "{ \"error\": \"The offered card is either not owned by the user, or card is locked in deck, or the user tries to trade with self\"}"
+            );
+        }
+
+        if (cardToTrade.getDamage() < trade.getMinimumDamage() ||
                 !cardToTrade.getClass().getSimpleName().toLowerCase(Locale.ROOT).contains(trade.getCardType().toLowerCase(Locale.ROOT))) {
             return new Response(
                     HttpStatus.FORBIDDEN,
                     ContentType.JSON,
-                    "{ \"error\": \"The offered card is not owned by the user, or the requirements are not met (Type, MinimumDamage), or the offered card is locked in the deck, or the user tries to trade with self\"}"
+                    "{ \"error\": \"The offered card is not owned by the user, or the requirements are not met (Type, MinimumDamage), or the offered card is locked in the deck\"}"
             );
         }
 
+
+        return executeTrade(cardFromTrade, cardToTrade, trade);
+    }
+
+    private Response executeCoinTrade(Card cardFromTrade, User user, Trade trade) {
+        if (user.getCoins() < trade.getCoins()) {
+            return new Response(
+                    HttpStatus.FORBIDDEN,
+                    ContentType.JSON,
+                    "{ \"error\": \"Not enough coins\"}"
+            );
+        }
+
+        int deletedRows = tradingService.deleteTrade(trade);
+        if (deletedRows == 0) {
+            return new Response(
+                    HttpStatus.GONE,
+                    ContentType.JSON,
+                    "{ \"error\": \"Oops it looks like this trade is not available anymore\"}"
+            );
+        }
+
+        Optional<User> optionalCardOwner = userService.findUserById(cardFromTrade.getUserId());
+        if (optionalCardOwner.isEmpty()) {
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "{ \"error\": \"Something went wrong\"}"
+            );
+        }
+        User cardOwner = optionalCardOwner.get();
+        cardOwner.setCoins(cardOwner.getCoins() + trade.getCoins());
+        userService.updateUser(cardOwner.getUsername(), cardOwner);
+
+        user.setCoins(user.getCoins() - trade.getCoins());
+        userService.updateUser(user.getUsername(), user);
+
+        Card cardFromTradeUpdated = new MonsterCard(cardFromTrade);
+        cardFromTradeUpdated.setUserId(user.getId());
+
+        cardService.updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
+        return new Response(
+                HttpStatus.OK,
+                ContentType.JSON,
+                "{ \"message\": \"Trading deal successfully executed\" }"
+        );
+    }
+
+
+    private Response executeTrade(Card cardFromTrade, Card cardToTrade, Trade trade) {
         int deletedRows = tradingService.deleteTrade(trade);
         if (deletedRows == 0) {
             return new Response(
@@ -203,6 +272,26 @@ public class TradingController extends Controller {
 
         try {
             trade = getObjectMapper().readValue(rawTrade, Trade.class);
+            if (trade.getId() == null || trade.getCardId() == null) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ \"error\": \"Trade Id and/or Card Id must be provided\"}"
+                );
+            }
+            if (trade.getCoins() != null) {
+                if (trade.getCoins() > 0) {
+                    trade.setCardType(null);
+                    trade.setMinimumDamage(null);
+                } else
+                    return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{ \"error\": \"Coins must be greater than 0\"}");
+            } else if (trade.getMinimumDamage() == null || trade.getMinimumDamage() < 0 || trade.getCardType() == null) {
+                return new Response(
+                        HttpStatus.BAD_REQUEST,
+                        ContentType.JSON,
+                        "{ \"error\": \"MinimumDamage and/or CardType must be provided\"}"
+                );
+            }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return new Response(
@@ -211,6 +300,7 @@ public class TradingController extends Controller {
                     "{ \"error\": \"Could not parse\", \"data\": " + rawTrade + " }"
             );
         }
+
         return createTrade(user, trade);
     }
 
@@ -235,6 +325,15 @@ public class TradingController extends Controller {
         }
 
         Card card = optionalCard.get();
+
+        Optional<Trade> optionalCardInTrade = cardService.findTradeByCardId(card.getId());
+        if (optionalCardInTrade.isPresent()) {
+            return new Response(
+                    HttpStatus.CONFLICT,
+                    ContentType.JSON,
+                    "{ \"error\": \"The provided card is already locked in a Trade\"}"
+            );
+        }
 
         Response notOwnerOrLockedResponse = new Response(
                 HttpStatus.FORBIDDEN,

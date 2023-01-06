@@ -15,7 +15,7 @@ public class TradeDao implements Dao<Trade> {
     @Override
     public Optional<Trade> get(String id) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, card_id, type, min_damage
+                SELECT id, card_id, type, min_damage, coins
                 FROM "Trade"
                 WHERE id = ?;
                 """)
@@ -34,7 +34,7 @@ public class TradeDao implements Dao<Trade> {
 
     public Optional<Trade> getByCardId(String cardId) {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, card_id, type, min_damage
+                SELECT id, card_id, type, min_damage, coins
                 FROM "Trade"
                 WHERE card_id = ?;
                 """)
@@ -55,7 +55,7 @@ public class TradeDao implements Dao<Trade> {
     public Collection<Trade> getAll() {
         ArrayList<Trade> result = new ArrayList<>();
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
-                SELECT id, card_id, type, min_damage
+                SELECT id, card_id, type, min_damage, coins
                 FROM "Trade";
                 """)
         ) {
@@ -73,14 +73,15 @@ public class TradeDao implements Dao<Trade> {
     public int save(Trade trade) throws DBErrorException {
         try (PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 INSERT INTO "Trade"
-                (id, card_id, type, min_damage)
-                VALUES (?, ?, ?, ?);
+                (id, card_id, type, min_damage, coins)
+                VALUES (?, ?, ?, ?, ?);
                 """)) {
 
             statement.setString(1, trade.getId());
             statement.setString(2, trade.getCardId());
             statement.setString(3, trade.getCardType());
-            statement.setInt(4, trade.getMinimumDamage());
+            statement.setObject(4, trade.getMinimumDamage());
+            statement.setObject(5, trade.getCoins());
 
             return statement.executeUpdate();
         } catch (SQLException e) {
@@ -93,17 +94,18 @@ public class TradeDao implements Dao<Trade> {
     public int update(String tradeId, Trade updatedTrade) throws DBErrorException {
         try ( PreparedStatement statement = DBConnection.getInstance().prepareStatement("""
                 UPDATE "Trade"
-                SET card_id = ?, type = ?, min_damage = ?
+                SET card_id = ?, type = ?, min_damage = ?, coins = ?
                 WHERE id = ?
                 """)
         ) {
             // UPDATE WITH NEW TRADE DATA
             statement.setString(1, updatedTrade.getCardId());
             statement.setString(2, updatedTrade.getCardType());
-            statement.setInt(3, updatedTrade.getMinimumDamage());
+            statement.setObject(3, updatedTrade.getMinimumDamage());
+            statement.setObject(4, updatedTrade.getCoins());
 
             // USE CURRENT ID
-            statement.setString(4, tradeId);
+            statement.setString(5, tradeId);
 
             return statement.executeUpdate();
         } catch (SQLException e) {
@@ -132,7 +134,8 @@ public class TradeDao implements Dao<Trade> {
                 resultSet.getString(1),
                 resultSet.getString(2),
                 resultSet.getString(3),
-                resultSet.getInt(4)
+                resultSet.getObject(4, Integer.class),
+                resultSet.getObject(5, Integer.class)
         );
     }
 }

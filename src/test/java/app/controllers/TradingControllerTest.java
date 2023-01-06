@@ -6,6 +6,7 @@ import app.models.Trade;
 import app.models.User;
 import app.service.CardService;
 import app.service.TradingService;
+import app.service.UserService;
 import enums.Element;
 import http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,8 @@ class TradingControllerTest {
     void setUp() {
         this.tradingService = mock(TradingService.class);
         this.cardService = mock(CardService.class);
-        this.tradingController = new TradingController(tradingService, cardService);
+        UserService userService = mock(UserService.class);
+        this.tradingController = new TradingController(tradingService, cardService, userService);
         this.user = new User("username", "password");
     }
 
@@ -44,10 +46,10 @@ class TradingControllerTest {
     @Test
     void getAllTrades_WithTradesAvailable_ShouldReturnOk() {
         ArrayList<Trade> trades = new ArrayList<>();
-        trades.add(new Trade("id1", "c1", "monster", 15));
-        trades.add(new Trade("id2", "c2", "monster", 15));
-        trades.add(new Trade("id3", "c3", "monster", 15));
-        trades.add(new Trade("id4", "c4", "monster", 15));
+        trades.add(new Trade("id1", "c1", "monster", 15, null));
+        trades.add(new Trade("id2", "c2", "monster", 15, null));
+        trades.add(new Trade("id3", "c3", "monster", 15, null));
+        trades.add(new Trade("id4", "c4", "monster", 15, null));
 
         when(tradingService.findAllTrades()).thenReturn(trades);
 
@@ -57,7 +59,7 @@ class TradingControllerTest {
 
     @Test
     void completeTrade_WithCardLockedInTrade_ShouldReturnConflict() {
-        Trade trade = new Trade("id1", "cardId1", "monster", 15);
+        Trade trade = new Trade("id1", "cardId1", "monster", 15, null);
         Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", user.getId(), "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
@@ -67,18 +69,17 @@ class TradingControllerTest {
         when(cardService.findCardById(trade.getCardId())).thenReturn(Optional.of(cardFromTrade));
         when(cardService.findCardById(cardToTrade.getId())).thenReturn(Optional.of(cardToTrade));
 
-        Trade tradeLockingCardToTrade = new Trade("id2", cardToTrade.getId(), "spell", 10);
+        Trade tradeLockingCardToTrade = new Trade("id2", cardToTrade.getId(), "spell", 10, null);
         when(cardService.findTradeByCardId(cardToTrade.getId())).thenReturn(Optional.of(tradeLockingCardToTrade));
 
-        Response response = tradingController.completeTrade(user,trade.getId(), cardIdToTrade);
-        System.out.println(response.getContent());
+        Response response = tradingController.completeTrade(user, trade.getId(), cardIdToTrade);
         assertEquals(HttpStatus.CONFLICT.getMessage(), response.getStatusMessage());
     }
 
     @Test
     void completeTrade_WithOwnCard_ShouldReturnForbidden() {
-        Trade trade = new Trade("id1", "cardId1", "monster", 15);
-        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE,"","", user.getId(), "");
+        Trade trade = new Trade("id1", "cardId1", "monster", 15, null);
+        Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", user.getId(), "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
         String cardIdToTrade = "\"cardId2\"";
@@ -89,13 +90,13 @@ class TradingControllerTest {
 
         when(cardService.findTradeByCardId(cardToTrade.getId())).thenReturn(Optional.empty());
 
-        Response response = tradingController.completeTrade(user,trade.getId(), cardIdToTrade);
+        Response response = tradingController.completeTrade(user, trade.getId(), cardIdToTrade);
         assertEquals(HttpStatus.FORBIDDEN.getMessage(), response.getStatusMessage());
     }
 
     @Test
     void completeTrade_WithNotOwningCard_ShouldReturnForbidden() {
-        Trade trade = new Trade("id1", "cardId1", "monster", 15);
+        Trade trade = new Trade("id1", "cardId1", "monster", 15, null);
         Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", user.getId(), "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
@@ -107,13 +108,13 @@ class TradingControllerTest {
 
         when(cardService.findTradeByCardId(cardToTrade.getId())).thenReturn(Optional.empty());
 
-        Response response = tradingController.completeTrade(user,trade.getId(), cardIdToTrade);
+        Response response = tradingController.completeTrade(user, trade.getId(), cardIdToTrade);
         assertEquals(HttpStatus.FORBIDDEN.getMessage(), response.getStatusMessage());
     }
 
     @Test
     void completeTrade_WithCardLockedInDeck_ShouldReturnForbidden() {
-        Trade trade = new Trade("id1", "cardId1", "monster", 15);
+        Trade trade = new Trade("id1", "cardId1", "monster", 15, null);
         Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", "USER_ID_FROM_TRADER", "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
@@ -125,13 +126,13 @@ class TradingControllerTest {
 
         when(cardService.findTradeByCardId(cardToTrade.getId())).thenReturn(Optional.empty());
 
-        Response response = tradingController.completeTrade(user,trade.getId(), cardIdToTrade);
+        Response response = tradingController.completeTrade(user, trade.getId(), cardIdToTrade);
         assertEquals(HttpStatus.FORBIDDEN.getMessage(), response.getStatusMessage());
     }
 
     @Test
     void completeTrade_WithValidCard_ShouldReturnOk() {
-        Trade trade = new Trade("id1", "cardId1", "monster", 15);
+        Trade trade = new Trade("id1", "cardId1", "monster", 15, null);
         Card cardFromTrade = new MonsterCard("cardId1", "goblin", 10, Element.FIRE, "", "", "USER_ID_FROM_TRADER", "");
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
 
@@ -144,21 +145,19 @@ class TradingControllerTest {
         when(cardService.findTradeByCardId(cardToTrade.getId())).thenReturn(Optional.empty());
         when(tradingService.deleteTrade(trade)).thenReturn(1);
 
-        Response response = tradingController.completeTrade(user,trade.getId(), cardIdToTrade);
-        System.out.println(response.getContent());
+        Response response = tradingController.completeTrade(user, trade.getId(), cardIdToTrade);
         assertEquals(HttpStatus.OK.getMessage(), response.getStatusMessage());
     }
 
     @Test
     void deleteTrade_WithDifferentUser_ShouldReturnForbidden() {
-        Trade trade = new Trade("id1", "cardId1", "monster", 15);
+        Trade trade = new Trade("id1", "cardId1", "monster", 15, null);
         Card cardFromTrade = new MonsterCard(trade.getCardId(), "goblin", 10, Element.FIRE, "", "", "USER_ID_FROM_TRADER", null);
 
         when(tradingService.findTradeById(trade.getId())).thenReturn(Optional.of(trade));
         when(cardService.findCardById(cardFromTrade.getId())).thenReturn(Optional.of(cardFromTrade));
 
         Response response = tradingController.deleteTrade(user, trade.getId());
-        System.out.println(response.getContent());
         assertEquals(HttpStatus.FORBIDDEN.getMessage(), response.getStatusMessage());
     }
 }

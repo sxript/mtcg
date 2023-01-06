@@ -24,6 +24,7 @@ public class Main {
         service.start();
 
         // TODO: CARD DESCRIPTION
+        // TODO: TRADE CARDS FOR COINS
 
         // TODO: UPDATE DB
         // TODO: CREATE WEIRD ?type=plain thingy
