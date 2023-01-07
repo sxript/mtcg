@@ -26,7 +26,7 @@ The Game Queueing system is implemented with the Consumer/Producer pattern where
         - A user can create a coin trade on the same route as the card trade `POST /tradings` only that in this case a coins property must be provided in the Request Body along with the card id to trade
     - Card Description
         - A Card can have a description that can be set by an admin on the route `PATCH /cards/:card_id`
-    - Implemented a more sophisticated Elo System [Chess Elo System](https://de.wikipedia.org/wiki/Elo-Zahl)https://de.wikipedia.org/wiki/Elo-Zahl
+    - Implemented a more sophisticated Elo System [Chess Elo System](https://de.wikipedia.org/wiki/Elo-Zahl)
     - Added Win/Lose Ratio to user stats
 
 ## Failures and Solutions
