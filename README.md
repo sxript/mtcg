@@ -4,6 +4,7 @@
 
 ### Database Schema
 ![Database Schema](./docs/db_schema.png)
+
 [Migration Script](./docs/migration.sql)
 
 The code is mainly structured into:
