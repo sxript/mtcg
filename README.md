@@ -1,10 +1,10 @@
 # Setup
 ```
-	# Start the container
-	docker compose up -d
+# Start the container
+docker compose up -d
 	
-	# Run the migration.sql to create the tables
-	docker exec -i postgres_mtcg psql -U postgres -d mtcg < migration.sql
+# Run the migration.sql to create the tables
+docker exec -i postgres_mtcg psql -U postgres -d mtcg < migration.sql
 ```
 
 # Technical Implementation
