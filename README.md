@@ -1,3 +1,11 @@
+# Setup
+```
+	# Start the container
+	docker compose up -d
+	
+	# Run the migration.sql to create the tables
+	docker exec -i postgres_mtcg psql -U postgres -d mtcg < migration.sql
+```
 
 # Technical Implementation
 ## Designs
@@ -5,7 +13,7 @@
 ### Database Schema
 ![Database Schema](./docs/db_schema.png)
 
-[Migration Script](./docs/migration.sql)
+[Migration Script](migration.sql)
 
 The code is mainly structured into:
 - Controllers
@@ -43,4 +51,4 @@ The tested code is critical since if edge cases are not tested properly it could
 
 # Time Spent
 
-Around 60h (Git history more detailed with commits)
+Around 70h (Git history more detailed with commits)
