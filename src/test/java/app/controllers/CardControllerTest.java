@@ -74,7 +74,7 @@ class CardControllerTest {
     void getDeck_WithNoDeck_ShouldReturnNoContent() {
         when(cardService.findDeckByUserId(user.getId())).thenReturn(Optional.empty());
 
-        Response response = cardController.getDeck(user);
+        Response response = cardController.getDeck(user, null);
         assertEquals(HttpStatus.NO_CONTENT.getMessage(), response.getStatusMessage());
     }
 }

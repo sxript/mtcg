@@ -14,6 +14,7 @@ import server.Request;
 import server.Response;
 import server.ServerApp;
 
+import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 
 @Setter(AccessLevel.PRIVATE)
@@ -45,7 +46,7 @@ public class App implements ServerApp {
                 } else if (request.getPathName().equals("/cards")) {
                     return getCardController().getUserCards(user);
                 } else if (request.getPathName().equals("/decks")) {
-                    return getCardController().getDeck(user);
+                    return getCardController().getDeck(user, request.getParams());
                 } else if (request.getPathName().equals("/stats")) {
                     return getGameController().getStats(user);
                 } else if (request.getPathName().equals("/scores")) {

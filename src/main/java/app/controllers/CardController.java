@@ -243,8 +243,21 @@ public class CardController extends Controller {
     }
 
     // GET /decks
-    public Response getDeck(User user) {
+    public Response getDeck(User user, String params) {
+        boolean isPlain = false;
+        if (params != null) {
+            String[] split = params.split("=");
+            isPlain = split.length == 2 && split[1].toLowerCase(Locale.ROOT).equals("plain");
+        }
+
         if (user == null) {
+            if (isPlain) {
+                return new Response(
+                        HttpStatus.UNAUTHORIZED,
+                        ContentType.TEXT,
+                        "Access token is missing or invalid"
+                );
+            }
             return CommonErrors.TOKEN_ERROR;
         }
 
@@ -252,11 +265,20 @@ public class CardController extends Controller {
 
         Deck deck;
 
-        Response noContentResponse = new Response(
-                HttpStatus.NO_CONTENT,
-                ContentType.JSON,
-                "{ \"message\": \"Deck is empty\", \"data\": []}"
-        );
+        Response noContentResponse;
+        if (isPlain) {
+            noContentResponse = new Response(
+                    HttpStatus.NO_CONTENT,
+                    ContentType.TEXT,
+                    "Deck is empty"
+            );
+        } else {
+           noContentResponse = new Response(
+                    HttpStatus.NO_CONTENT,
+                    ContentType.JSON,
+                    "{ \"message\": \"Deck is empty\", \"data\": []}"
+            );
+        }
 
         if (optionalDeck.isPresent()) {
             deck = optionalDeck.get();
@@ -267,6 +289,14 @@ public class CardController extends Controller {
         try {
             if (cardDeck.isEmpty()) {
                 return noContentResponse;
+            }
+            if (isPlain) {
+                List<String> responseCards = cardDeck.stream().map(Card::toString).toList();
+                return new Response(
+                        HttpStatus.OK,
+                        ContentType.TEXT,
+                        getObjectMapper().writeValueAsString(responseCards)
+                );
             }
             return new Response(
                     HttpStatus.OK,

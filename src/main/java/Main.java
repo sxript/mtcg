@@ -22,7 +22,5 @@ public class Main {
         App app = new App(gameQueue);
         Thread service = new Thread(new Server(app, 7777));
         service.start();
-
-        // TODO: CREATE WEIRD ?type=plain thingy
     }
 }
