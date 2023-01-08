@@ -24,7 +24,7 @@ The code is mainly structured into:
 
 The Dao accesses the data from the database. Services use the Daos and offer methods that build on top of the Dao Methods. The Service layer is then used by the controllers.
 
-The Game Queueing system is implemented with the Consumer/Producer pattern where the clients are producers and the server is the consumer of the clients and with them creates games. For the Queue I used a   `BlockingQueue` that takes `QueueUser`'s a `QueueUser` consists of `User` and another `BlockingQueue<Response>` that has an capacity of 1. The Queue from the Queue User is used to offer a two way communication and to synchronize the threads. After joining a game every `QueueUser` calls `take` on their Response Queue and waits for the game to finish.
+The Game Queueing system is implemented with the Consumer/Producer pattern where the clients are producers and the server is the consumer of the clients and with them creates games. For the Queue, I used a   `BlockingQueue` that takes `QueueUser`'s a `QueueUser` consists of `User` and another `BlockingQueue<Response>` that has a capacity of 1. The Queue from the Queue User is used to offer two-way communication and to synchronize the threads. After joining a game every `QueueUser` calls `take` on their Response Queue and waits for the game to finish.
 
 ## Features
 - **Mandatory feature**
