@@ -10,11 +10,14 @@ import app.models.Card;
 import app.models.Deck;
 import app.models.Stats;
 import app.models.User;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
+@Getter(AccessLevel.PRIVATE)
 public class GameServiceImpl implements GameService {
     private final StatsDao statsDao;
     private final UserDao userDao;
@@ -34,10 +37,10 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public Collection<UserStatsDTO> getAllStatsSorted() {
-        ArrayList<Stats> allStats = (ArrayList<Stats>) statsDao.getAll();
+        ArrayList<Stats> allStats = (ArrayList<Stats>) getStatsDao().getAll();
         ArrayList<UserStatsDTO> scoreboard = new ArrayList<>();
         allStats.forEach(stats -> {
-            Optional<User> optionalUser = userDao.getById(stats.getUserId());
+            Optional<User> optionalUser = getUserDao().getById(stats.getUserId());
             if (optionalUser.isPresent()) {
                 User user = optionalUser.get();
 
@@ -53,7 +56,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public Optional<UserStatsDTO> getStatsByUserId(String userId) {
-        Optional<Stats> optionalStats = statsDao.get(userId);
+        Optional<Stats> optionalStats = getStatsDao().get(userId);
         if (optionalStats.isEmpty()) return Optional.empty();
 
         UserStatsDTO userStatsDTO = new UserStatsDTO();
@@ -61,7 +64,7 @@ public class GameServiceImpl implements GameService {
         Stats stats = optionalStats.get();
         userStatsDTO.setStats(stats);
 
-        Optional<User> optionalUser = userDao.getById(stats.getUserId());
+        Optional<User> optionalUser = getUserDao().getById(stats.getUserId());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             userStatsDTO.setName(user.getName());
@@ -73,11 +76,11 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void battlePreCheck(User user) throws InvalidDeckException {
-        Optional<Deck> optionalDeck = deckDao.getByUserId(user.getId());
+        Optional<Deck> optionalDeck = getDeckDao().getByUserId(user.getId());
         if (optionalDeck.isEmpty()) {
             throw new InvalidDeckException("No Deck configured");
         }
-        ArrayList<Card> cards = (ArrayList<Card>) cardDao.getAllByPackageUserDeckId(null, null, optionalDeck.get().getId());
+        ArrayList<Card> cards = (ArrayList<Card>) getCardDao().getAllByPackageUserDeckId(null, null, optionalDeck.get().getId());
         if (cards.size() != 4) {
             throw new InvalidDeckException("Deck must consist of 4 Cards");
         }

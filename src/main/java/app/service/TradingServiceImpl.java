@@ -3,10 +3,13 @@ package app.service;
 import app.dao.TradeDao;
 import app.exceptions.DBErrorException;
 import app.models.Trade;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 import java.util.Collection;
 import java.util.Optional;
 
+@Getter(AccessLevel.PRIVATE)
 public class TradingServiceImpl implements TradingService {
     private final TradeDao tradeDao;
 
@@ -20,23 +23,23 @@ public class TradingServiceImpl implements TradingService {
 
     @Override
     public Optional<Trade> findTradeById(String id) {
-        return tradeDao.get(id);
+        return getTradeDao().get(id);
     }
 
     @Override
     public Collection<Trade> findAllTrades() {
-        return tradeDao.getAll();
+        return getTradeDao().getAll();
     }
 
     @Override
     public int createTrade(Trade trade) throws DBErrorException {
-            return tradeDao.save(trade);
+            return getTradeDao().save(trade);
     }
 
     @Override
     public int deleteTrade(Trade trade) {
         try {
-            return tradeDao.delete(trade);
+            return getTradeDao().delete(trade);
         } catch (DBErrorException e) {
             return 0;
         }

@@ -14,7 +14,6 @@ import server.Request;
 import server.Response;
 import server.ServerApp;
 
-import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 
 @Setter(AccessLevel.PRIVATE)

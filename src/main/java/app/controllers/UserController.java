@@ -19,9 +19,9 @@ import server.Response;
 import java.util.Objects;
 import java.util.Optional;
 
+@Getter(AccessLevel.PRIVATE)
 public class UserController extends Controller {
     @Setter(AccessLevel.PRIVATE)
-    @Getter(AccessLevel.PRIVATE)
     private UserService userService;
     private final TokenServiceImpl tokenService = new TokenServiceImpl();
 
@@ -55,7 +55,7 @@ public class UserController extends Controller {
 
     // POST /users
     private Response createUser(User user) {
-        Optional<User> optionalUser = userService.getUserByUsername(user.getUsername());
+        Optional<User> optionalUser = getUserService().getUserByUsername(user.getUsername());
         if(optionalUser.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -65,7 +65,7 @@ public class UserController extends Controller {
         }
 
         try {
-            userService.saveUser(user);
+            getUserService().saveUser(user);
         } catch (DBErrorException e) {
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -88,7 +88,7 @@ public class UserController extends Controller {
 
         UserStatsProfileDTO userDTO = new UserStatsProfileDTO();
 
-        Optional<User> optionalUser = userService.getUserByUsername(username);
+        Optional<User> optionalUser = getUserService().getUserByUsername(username);
         if(optionalUser.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
@@ -97,8 +97,8 @@ public class UserController extends Controller {
             );
         }
         userDTO.setUser(optionalUser.get());
-        Optional<Stats> optionalStats = userService.findStatsByUserId(user.getId());
-        Optional<Profile> optionalProfile = userService.findProfileByUserId(user.getId());
+        Optional<Stats> optionalStats = getUserService().findStatsByUserId(user.getId());
+        Optional<Profile> optionalProfile = getUserService().findProfileByUserId(user.getId());
 
         optionalStats.ifPresent(userDTO::setStats);
         optionalProfile.ifPresent(userDTO::setProfile);
@@ -139,7 +139,7 @@ public class UserController extends Controller {
 
     // PUT /users/:username
     private Response updateUser(String username, UserStatsProfileDTO updatedUser) {
-        Optional<User> optionalUser = userService.getUserByUsername(username);
+        Optional<User> optionalUser = getUserService().getUserByUsername(username);
 
         if(optionalUser.isEmpty()) {
             return new Response(
@@ -150,12 +150,12 @@ public class UserController extends Controller {
         }
         User user = optionalUser.get();
         user.setName(updatedUser.getUser().getName());
-        Optional<Profile> optionalProfile = userService.findProfileByUserId(user.getId());
+        Optional<Profile> optionalProfile = getUserService().findProfileByUserId(user.getId());
         Profile profile;
         if(optionalProfile.isEmpty()) {
             profile = new Profile(user.getId());
             try {
-                int affectedRows = userService.createProfile(profile);
+                int affectedRows = getUserService().createProfile(profile);
                 if (affectedRows == 0) {
                     return new Response(
                             HttpStatus.BAD_REQUEST,
@@ -174,8 +174,8 @@ public class UserController extends Controller {
         profile.setBio(updatedUser.getProfile().getBio());
         profile.setImage(updatedUser.getProfile().getImage());
 
-        userService.updateUser(username, user);
-        userService.updateProfile(profile.getId(), profile);
+        getUserService().updateUser(username, user);
+        getUserService().updateProfile(profile.getId(), profile);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -210,7 +210,7 @@ public class UserController extends Controller {
 
     // POST /sessions
     private Response loginUser(User user) {
-        Optional<User> optionalUser = userService.getUserByUsername(user.getUsername());
+        Optional<User> optionalUser = getUserService().getUserByUsername(user.getUsername());
         if(optionalUser.isEmpty() || !optionalUser.get().getPassword().equals(user.getPassword())) {
             return new Response(
                     HttpStatus.UNAUTHORIZED,
@@ -219,7 +219,7 @@ public class UserController extends Controller {
             );
         }
 
-        String token = tokenService.generateAccessToken(user.getUsername());
+        String token = getTokenService().generateAccessToken(user.getUsername());
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,

@@ -1,6 +1,5 @@
 package app.controllers;
 
-import app.dto.UserStatsProfileDTO;
 import app.exceptions.CustomJsonProcessingException;
 import app.exceptions.DBErrorException;
 import app.models.*;
@@ -15,10 +14,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
+import lombok.AccessLevel;
+import lombok.Getter;
 import server.Response;
 
 import java.util.*;
 
+@Getter(AccessLevel.PRIVATE)
 public class CardController extends Controller {
     private final CardService cardService;
     private final UserService userService;
@@ -80,7 +82,7 @@ public class CardController extends Controller {
     }
 
     private Response createPackage(Card card, String packageId) {
-        Optional<Card> optionalCard = cardService.findCardById(card.getId());
+        Optional<Card> optionalCard = getCardService().findCardById(card.getId());
         if (optionalCard.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -91,7 +93,7 @@ public class CardController extends Controller {
 
         card.setPackageId(packageId);
         try {
-            int createdRows = cardService.saveCard(card);
+            int createdRows = getCardService().saveCard(card);
             if (createdRows == 0) {
                 return new Response(
                         HttpStatus.BAD_REQUEST,
@@ -119,7 +121,7 @@ public class CardController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Package> optionalPackage = cardService.findFirstPackage();
+        Optional<Package> optionalPackage = getCardService().findFirstPackage();
         if (optionalPackage.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
@@ -139,8 +141,8 @@ public class CardController extends Controller {
             );
         }
 
-        Collection<Card> cards = cardService.findAllCardsByPackageId(packageId);
-        int deletedRows = cardService.deletePackage(aPackage);
+        Collection<Card> cards = getCardService().findAllCardsByPackageId(packageId);
+        int deletedRows = getCardService().deletePackage(aPackage);
         if (deletedRows == 0) {
             return new Response(
                     HttpStatus.GONE,
@@ -149,14 +151,14 @@ public class CardController extends Controller {
             );
         }
         user.setCoins(user.getCoins() - aPackage.getPrice());
-        userService.updateUser(user.getUsername(), user);
+        getUserService().updateUser(user.getUsername(), user);
 
         ArrayList<Card> cardsChangedInTx = new ArrayList<>();
         for (Card card : cards) {
             cardsChangedInTx.add(new MonsterCard(card));
             card.setPackageId(null);
             card.setUserId(user.getId());
-            cardService.updateCard(card.getId(), card);
+            getCardService().updateCard(card.getId(), card);
         }
 
         try {
@@ -177,7 +179,7 @@ public class CardController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Collection<Card> cards = cardService.findAllCardsByUserId(user.getId());
+        Collection<Card> cards = getCardService().findAllCardsByUserId(user.getId());
         if (cards.isEmpty()) {
             return new Response(
                     HttpStatus.NO_CONTENT,
@@ -220,7 +222,7 @@ public class CardController extends Controller {
     }
 
     private Response updateCard(String cardId, Card card) {
-        Optional<Card> optionalCard = cardService.findCardById(cardId);
+        Optional<Card> optionalCard = getCardService().findCardById(cardId);
 
         if (optionalCard.isEmpty()) {
             return new Response(
@@ -234,7 +236,7 @@ public class CardController extends Controller {
 
         toUpdate.setDescription(card.getDescription());
 
-        cardService.updateCard(toUpdate.getId(), toUpdate);
+        getCardService().updateCard(toUpdate.getId(), toUpdate);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -261,7 +263,7 @@ public class CardController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Deck> optionalDeck = cardService.findDeckByUserId(user.getId());
+        Optional<Deck> optionalDeck = getCardService().findDeckByUserId(user.getId());
 
         Deck deck;
 
@@ -285,7 +287,7 @@ public class CardController extends Controller {
         } else return noContentResponse;
 
 
-        Collection<Card> cardDeck = cardService.findAllCardsByDeckId(deck.getId());
+        Collection<Card> cardDeck = getCardService().findAllCardsByDeckId(deck.getId());
         try {
             if (cardDeck.isEmpty()) {
                 return noContentResponse;
@@ -327,15 +329,15 @@ public class CardController extends Controller {
             }
 
             // The deck and cards in the current deck are needed to rollback in case of an error
-            Optional<Deck> optionalDeck = cardService.findDeckByUserId(user.getId());
+            Optional<Deck> optionalDeck = getCardService().findDeckByUserId(user.getId());
             Deck deck = null;
             Collection<Card> cardsInDeckBeforeTx = Collections.emptyList();
             if (optionalDeck.isPresent()) {
                 deck = optionalDeck.get();
-                cardsInDeckBeforeTx = cardService.findAllCardsByDeckId(deck.getId());
+                cardsInDeckBeforeTx = getCardService().findAllCardsByDeckId(deck.getId());
                 for (Card c : cardsInDeckBeforeTx) {
                     c.setDeckId(null);
-                    cardService.updateCard(c.getId(), c);
+                    getCardService().updateCard(c.getId(), c);
                 }
             }
 
@@ -349,7 +351,7 @@ public class CardController extends Controller {
             Set<String> cardsAddedToDeck = new HashSet<>();
             for (JsonNode node : jsonNode) {
                 String cardId = node.asText();
-                if (cardService.findTradeByCardId(cardId).isPresent()) {
+                if (getCardService().findTradeByCardId(cardId).isPresent()) {
                     rollbackUserDeck(deck, cardsAddedToDeck, cardsInDeckBeforeTx);
                     return new Response(
                             HttpStatus.CONFLICT,
@@ -390,7 +392,7 @@ public class CardController extends Controller {
 
     private Response handleCreatePackage(Package packageToCreate) {
         try {
-            int createdRows = cardService.createPackage(packageToCreate);
+            int createdRows = getCardService().createPackage(packageToCreate);
             if (createdRows == 0) {
                 return new Response(
                         HttpStatus.BAD_REQUEST,
@@ -410,7 +412,7 @@ public class CardController extends Controller {
 
     private Response handleCreateDeck(Deck tempDeck) {
         try {
-            int createdRows = cardService.saveDeck(tempDeck);
+            int createdRows = getCardService().saveDeck(tempDeck);
             if (createdRows == 0) {
                 return new Response(
                         HttpStatus.BAD_REQUEST,
@@ -430,22 +432,22 @@ public class CardController extends Controller {
 
     private void rollbackUserDeck(Deck deck, Collection<String> cardIdsAddedToDeck, Collection<Card> cardsInDeckBeforeTx) {
         for (String cId : cardIdsAddedToDeck) {
-            Optional<Card> optionalCard = cardService.findCardById(cId);
+            Optional<Card> optionalCard = getCardService().findCardById(cId);
             if (optionalCard.isEmpty()) continue;
 
             Card c = optionalCard.get();
             c.setDeckId(null);
-            cardService.updateCard(c.getId(), c);
+            getCardService().updateCard(c.getId(), c);
         }
 
         for (Card c : cardsInDeckBeforeTx) {
             c.setDeckId(deck.getId());
-            cardService.updateCard(c.getId(), c);
+            getCardService().updateCard(c.getId(), c);
         }
     }
 
     private Response setUserCard(User user, Deck deck, String cardId) {
-        Optional<Card> optionalCard = cardService.findCardById(cardId);
+        Optional<Card> optionalCard = getCardService().findCardById(cardId);
         Response forbidden = new Response(
                 HttpStatus.FORBIDDEN,
                 ContentType.JSON,
@@ -461,7 +463,7 @@ public class CardController extends Controller {
         }
 
         card.setDeckId(deck.getId());
-        cardService.updateCard(card.getId(), card);
+        getCardService().updateCard(card.getId(), card);
 
         return new Response(
                 HttpStatus.OK,
@@ -472,11 +474,11 @@ public class CardController extends Controller {
 
     private void rollBackCardInsert(ArrayList<String> cards, Package newPackage) {
         for (String cardId : cards) {
-            Optional<Card> optionalCard = cardService.findCardById(cardId);
-            optionalCard.ifPresent(cardService::deleteCard);
+            Optional<Card> optionalCard = getCardService().findCardById(cardId);
+            optionalCard.ifPresent(getCardService()::deleteCard);
         }
 
-        cardService.deletePackage(newPackage);
+        getCardService().deletePackage(newPackage);
     }
 
     private Card parseSimpleCard(String rawCard) throws JsonProcessingException {

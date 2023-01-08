@@ -11,11 +11,14 @@ import app.service.GameServiceImpl;
 import helper.CommonErrors;
 import http.ContentType;
 import http.HttpStatus;
+import lombok.AccessLevel;
+import lombok.Getter;
 import server.Response;
 
 import java.util.Optional;
 import java.util.concurrent.*;
 
+@Getter(AccessLevel.PRIVATE)
 public class BattleController {
     private final BlockingQueue<QueueUser> userGameQueue;
     private final GameService gameService = new GameServiceImpl();
@@ -26,10 +29,10 @@ public class BattleController {
 
     // POST /battles
     public Response battle(User user) {
-        System.out.println("Currently: " + userGameQueue.size() + " Users in Queue, in Thread: " + Thread.currentThread().getId());
+        System.out.println("Currently: " + getUserGameQueue().size() + " Users in Queue, in Thread: " + Thread.currentThread().getId());
 
         try {
-            gameService.battlePreCheck(user);
+            getGameService().battlePreCheck(user);
         } catch (InvalidDeckException e) {
             return new Response(
                     HttpStatus.BAD_REQUEST,
@@ -40,7 +43,7 @@ public class BattleController {
 
         try {
             QueueUser queueUser = new QueueUser(user);
-            userGameQueue.put(queueUser);
+            getUserGameQueue().put(queueUser);
 
             // Could change this to poll with a timeout so if something happens in a game, or it takes to long the user can still get a response
             return queueUser.getResponseQueue().take();

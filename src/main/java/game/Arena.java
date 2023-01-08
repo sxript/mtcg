@@ -1,7 +1,6 @@
 package game;
 
 import app.controllers.Controller;
-import app.models.Round;
 import app.models.*;
 import app.service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,10 +9,13 @@ import helper.CommonErrors;
 import helper.Tuple;
 import http.ContentType;
 import http.HttpStatus;
+import lombok.AccessLevel;
+import lombok.Getter;
 import server.Response;
 
 import java.util.*;
 
+@Getter(AccessLevel.PRIVATE)
 public class Arena extends Controller {
     private static final Random rnd = new Random();
     private static final int MAX_ROUNDS = 100;
@@ -38,8 +40,8 @@ public class Arena extends Controller {
         List<Round> battlelog = new ArrayList<>();
         String winnerId = null;
 
-        Optional<Deck> optionalDeckP1 = cardService.findDeckByUserId(player1.getId());
-        Optional<Deck> optionalDeckP2 = cardService.findDeckByUserId(player2.getId());
+        Optional<Deck> optionalDeckP1 = getCardService().findDeckByUserId(player1.getId());
+        Optional<Deck> optionalDeckP2 = getCardService().findDeckByUserId(player2.getId());
 
         if (optionalDeckP1.isEmpty() || optionalDeckP2.isEmpty()) {
             return CommonErrors.INTERNAL_SERVER_ERROR;
@@ -48,11 +50,11 @@ public class Arena extends Controller {
         Deck p1Deck = optionalDeckP1.get();
         Deck p2Deck = optionalDeckP2.get();
 
-        ArrayList<Card> p1DeckCards = (ArrayList<Card>) cardService.findAllCardsByDeckId(p1Deck.getId());
-        ArrayList<Card> p2DeckCards = (ArrayList<Card>) cardService.findAllCardsByDeckId(p2Deck.getId());
+        ArrayList<Card> p1DeckCards = (ArrayList<Card>) getCardService().findAllCardsByDeckId(p1Deck.getId());
+        ArrayList<Card> p2DeckCards = (ArrayList<Card>) getCardService().findAllCardsByDeckId(p2Deck.getId());
 
-        Optional<Stats> optionalStatsPlayer1 = userService.findStatsByUserId(player1.getId());
-        Optional<Stats> optionalStatsPlayer2 = userService.findStatsByUserId(player2.getId());
+        Optional<Stats> optionalStatsPlayer1 = getUserService().findStatsByUserId(player1.getId());
+        Optional<Stats> optionalStatsPlayer2 = getUserService().findStatsByUserId(player2.getId());
         if (p1DeckCards.size() != 4 || p2DeckCards.size() != 4 || optionalStatsPlayer1.isEmpty() || optionalStatsPlayer2.isEmpty()) {
             return CommonErrors.INTERNAL_SERVER_ERROR;
         }
@@ -115,7 +117,7 @@ public class Arena extends Controller {
 
         try {
             battleLogJson = getObjectMapper().writeValueAsString(battlelog);
-            battleService.createBattleLog(new BattleLog(gameId, battleLogJson, winnerId == null ? "THE GAME ENDED IN A DRAW" : "The User with the ID: " + winnerId + " won"));
+            getBattleService().createBattleLog(new BattleLog(gameId, battleLogJson, winnerId == null ? "THE GAME ENDED IN A DRAW" : "The User with the ID: " + winnerId + " won"));
         } catch (JsonProcessingException e) {
             return CommonErrors.INTERNAL_SERVER_ERROR;
         }
@@ -151,13 +153,13 @@ public class Arena extends Controller {
         loserOriginCard.setUserId(roundWinner.getId());
         loserOriginCard.setDeckId(winnerDeck.getId());
         System.out.println(roundWinner.getUsername() + " WON --> CARD: " + loserOriginCard);
-        cardService.updateCard(loserOriginCard.getId(), loserOriginCard);
+        getCardService().updateCard(loserOriginCard.getId(), loserOriginCard);
     }
 
     private void updateDecks(List<Card> cards) {
         cards.forEach(card -> {
             card.setDeckId(null);
-            cardService.updateCard(card.getId(), card);
+            getCardService().updateCard(card.getId(), card);
         });
     }
 
@@ -218,7 +220,7 @@ public class Arena extends Controller {
     private void updateScore(Stats winner, Stats loser, Boolean isDraw) {
         eloRater.calculateRating(winner, loser, isDraw);
 
-        userService.updateStats(winner.getUserId(), winner);
-        userService.updateStats(loser.getUserId(), loser);
+        getUserService().updateStats(winner.getUserId(), winner);
+        getUserService().updateStats(loser.getUserId(), loser);
     }
 }

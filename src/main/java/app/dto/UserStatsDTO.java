@@ -1,7 +1,6 @@
 package app.dto;
 
 import app.models.Stats;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -33,28 +33,6 @@ class GameQueueConsumerTest {
         t.start();
     }
 
-//    @Test
-//    void user_can_join_wait_queue() throws InterruptedException {
-//        int threadCount = 1;
-//        ExecutorService service = Executors.newFixedThreadPool(threadCount);
-//        CountDownLatch latch = new CountDownLatch(threadCount);
-//
-//        QueueUser queueUser = new QueueUser(new User("user1", ""));
-//        for (int i = 0; i < threadCount; i++) {
-//            service.execute(() -> {
-//                try {
-//                    gameQueue.put(queueUser);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                latch.countDown();
-//            });
-//        }
-//        latch.await();
-//        assertEquals(1, gameQueue.size());
-//    }
-
     @Test
     void joining_creates_battle() throws InterruptedException {
         int threadCount = 4;

@@ -7,9 +7,12 @@ import app.exceptions.DBErrorException;
 import app.models.Profile;
 import app.models.Stats;
 import app.models.User;
+import lombok.AccessLevel;
+import lombok.Getter;
 
 import java.util.Optional;
 
+@Getter(AccessLevel.PRIVATE)
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;
     private final StatsDao statsDao;
@@ -27,18 +30,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> getUserByUsername(String username) {
-        return userDao.get(username);
+        return getUserDao().get(username);
     }
 
     @Override
     public Optional<User> findUserById(String id) {
-        return userDao.getById(id);
+        return getUserDao().getById(id);
     }
 
     @Override
     public int updateUser(String username, User updatedUser) {
         try {
-            return userDao.update(username, updatedUser);
+            return getUserDao().update(username, updatedUser);
         } catch (DBErrorException e) {
             return 0;
         }
@@ -47,24 +50,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(User user) throws DBErrorException {
         try {
-            userDao.save(user);
-            statsDao.save(new Stats(user.getId()));
-            profileDao.save(new Profile(user.getId()));
+            getUserDao().save(user);
+            getStatsDao().save(new Stats(user.getId()));
+            getProfileDao().save(new Profile(user.getId()));
         } catch (DBErrorException e) {
-            userDao.delete(user);
+            getUserDao().delete(user);
             throw e;
         }
     }
 
     @Override
     public Optional<Stats> findStatsByUserId(String userId) {
-        return statsDao.get(userId);
+        return getStatsDao().get(userId);
     }
 
     @Override
     public int updateStats(String userId, Stats updatedStats) {
         try {
-            return statsDao.update(userId, updatedStats);
+            return getStatsDao().update(userId, updatedStats);
         } catch (DBErrorException e) {
             return 0;
         }
@@ -72,18 +75,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<Profile> findProfileByUserId(String userId) {
-        return profileDao.get(userId);
+        return getProfileDao().get(userId);
     }
 
     @Override
     public int createProfile(Profile profile) throws DBErrorException {
-        return profileDao.save(profile);
+        return getProfileDao().save(profile);
     }
 
     @Override
     public int updateProfile(String profileId, Profile updatedProfile) {
         try {
-            return profileDao.update(profileId, updatedProfile);
+            return getProfileDao().update(profileId, updatedProfile);
         } catch (DBErrorException e) {
             return 0;
         }

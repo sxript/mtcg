@@ -1,7 +1,6 @@
 package app.service;
 
 import app.models.BattleLog;
-import app.models.Card;
 
 import java.util.Optional;
 

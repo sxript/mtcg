@@ -8,8 +8,8 @@ import lombok.Getter;
 import java.util.Objects;
 import java.util.Optional;
 
-@Getter(AccessLevel.PRIVATE)
 // THIS WOULD BE BETTER WITH JWT AUTH
+@Getter(AccessLevel.PRIVATE)
 public class TokenServiceImpl implements TokenService {
     private final UserDao userDao;
     private static final String TOKEN_SUFFIX = "-mtcgToken";

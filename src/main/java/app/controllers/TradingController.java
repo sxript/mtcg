@@ -21,8 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 
+@Getter(AccessLevel.PRIVATE)
 public class TradingController extends Controller {
-    @Getter(AccessLevel.PRIVATE)
     private final CardService cardService;
     private final TradingService tradingService;
     private final UserService userService;
@@ -43,7 +43,7 @@ public class TradingController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Collection<Trade> trades = tradingService.findAllTrades();
+        Collection<Trade> trades = getTradingService().findAllTrades();
         if (trades.isEmpty()) {
             return new Response(
                     HttpStatus.NO_CONTENT,
@@ -70,7 +70,7 @@ public class TradingController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Trade> optionalTrade = tradingService.findTradeById(tradeId);
+        Optional<Trade> optionalTrade = getTradingService().findTradeById(tradeId);
 
         if (optionalTrade.isEmpty()) {
             return new Response(
@@ -91,8 +91,8 @@ public class TradingController extends Controller {
                     "{ \"error\": \"malformed request\"}"
             );
         }
-        Optional<Card> optionalCardFromTrade = cardService.findCardById(trade.getCardId());
-        Optional<Card> optionalCardToTrade = cardService.findCardById(cardIdToTrade);
+        Optional<Card> optionalCardFromTrade = getCardService().findCardById(trade.getCardId());
+        Optional<Card> optionalCardToTrade = getCardService().findCardById(cardIdToTrade);
 
         if (optionalCardFromTrade.isEmpty()) {
             return new Response(
@@ -116,7 +116,7 @@ public class TradingController extends Controller {
         }
         Card cardToTrade = optionalCardToTrade.get();
 
-        Optional<Trade> tradeWithCardToTrade = cardService.findTradeByCardId(cardToTrade.getId());
+        Optional<Trade> tradeWithCardToTrade = getCardService().findTradeByCardId(cardToTrade.getId());
         if (tradeWithCardToTrade.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -156,7 +156,7 @@ public class TradingController extends Controller {
             );
         }
 
-        int deletedRows = tradingService.deleteTrade(trade);
+        int deletedRows = getTradingService().deleteTrade(trade);
         if (deletedRows == 0) {
             return new Response(
                     HttpStatus.GONE,
@@ -165,7 +165,7 @@ public class TradingController extends Controller {
             );
         }
 
-        Optional<User> optionalCardOwner = userService.findUserById(cardFromTrade.getUserId());
+        Optional<User> optionalCardOwner = getUserService().findUserById(cardFromTrade.getUserId());
         if (optionalCardOwner.isEmpty()) {
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -175,15 +175,15 @@ public class TradingController extends Controller {
         }
         User cardOwner = optionalCardOwner.get();
         cardOwner.setCoins(cardOwner.getCoins() + trade.getCoins());
-        userService.updateUser(cardOwner.getUsername(), cardOwner);
+        getUserService().updateUser(cardOwner.getUsername(), cardOwner);
 
         user.setCoins(user.getCoins() - trade.getCoins());
-        userService.updateUser(user.getUsername(), user);
+        getUserService().updateUser(user.getUsername(), user);
 
         Card cardFromTradeUpdated = new MonsterCard(cardFromTrade);
         cardFromTradeUpdated.setUserId(user.getId());
 
-        cardService.updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
+        getCardService().updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -193,7 +193,7 @@ public class TradingController extends Controller {
 
 
     private Response executeTrade(Card cardFromTrade, Card cardToTrade, Trade trade) {
-        int deletedRows = tradingService.deleteTrade(trade);
+        int deletedRows = getTradingService().deleteTrade(trade);
         if (deletedRows == 0) {
             return new Response(
                     HttpStatus.GONE,
@@ -208,8 +208,8 @@ public class TradingController extends Controller {
         cardFromTradeUpdated.setUserId(cardToTrade.getUserId());
         cardToTradeUpdated.setUserId(cardFromTrade.getUserId());
 
-        cardService.updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
-        cardService.updateCard(cardToTrade.getId(), cardToTradeUpdated);
+        getCardService().updateCard(cardFromTrade.getId(), cardFromTradeUpdated);
+        getCardService().updateCard(cardToTrade.getId(), cardToTradeUpdated);
         return new Response(
                 HttpStatus.OK,
                 ContentType.JSON,
@@ -223,7 +223,7 @@ public class TradingController extends Controller {
             return CommonErrors.TOKEN_ERROR;
         }
 
-        Optional<Trade> optionalTrade = tradingService.findTradeById(tradeId);
+        Optional<Trade> optionalTrade = getTradingService().findTradeById(tradeId);
 
         if (optionalTrade.isEmpty()) {
             return new Response(
@@ -233,7 +233,7 @@ public class TradingController extends Controller {
             );
         }
         Trade trade = optionalTrade.get();
-        Optional<Card> optionalCard = cardService.findCardById(trade.getCardId());
+        Optional<Card> optionalCard = getCardService().findCardById(trade.getCardId());
 
         Response notOwnedResponse = new Response(
                 HttpStatus.FORBIDDEN,
@@ -248,7 +248,7 @@ public class TradingController extends Controller {
             }
         }
 
-        int deletedRows = tradingService.deleteTrade(trade);
+        int deletedRows = getTradingService().deleteTrade(trade);
         if (deletedRows == 0) {
             return new Response(
                     HttpStatus.GONE,
@@ -306,7 +306,7 @@ public class TradingController extends Controller {
 
     // POST /tradings
     private Response createTrade(User user, Trade trade) {
-        Optional<Trade> optionalTrade = tradingService.findTradeById(trade.getId());
+        Optional<Trade> optionalTrade = getTradingService().findTradeById(trade.getId());
         if (optionalTrade.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -315,7 +315,7 @@ public class TradingController extends Controller {
             );
         }
 
-        Optional<Card> optionalCard = cardService.findCardById(trade.getCardId());
+        Optional<Card> optionalCard = getCardService().findCardById(trade.getCardId());
         if (optionalCard.isEmpty()) {
             return new Response(
                     HttpStatus.NOT_FOUND,
@@ -326,7 +326,7 @@ public class TradingController extends Controller {
 
         Card card = optionalCard.get();
 
-        Optional<Trade> optionalCardInTrade = cardService.findTradeByCardId(card.getId());
+        Optional<Trade> optionalCardInTrade = getCardService().findTradeByCardId(card.getId());
         if (optionalCardInTrade.isPresent()) {
             return new Response(
                     HttpStatus.CONFLICT,
@@ -346,7 +346,7 @@ public class TradingController extends Controller {
         }
 
         try {
-            int createdRows = tradingService.createTrade(trade);
+            int createdRows = getTradingService().createTrade(trade);
             if (createdRows == 0) {
                 return new Response(
                         HttpStatus.BAD_REQUEST,

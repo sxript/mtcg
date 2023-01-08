@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 public class Round {
     private final int round;
-    private List<String> messages = new ArrayList<>();
+    private final List<String> messages = new ArrayList<>();
 
     public Round (int round) {
         this.round = round;

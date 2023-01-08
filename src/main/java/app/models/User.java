@@ -38,6 +38,7 @@ public class User {
         setPassword(password);
         setCoins(coins);
     }
+
     public User(String name, String username, String password, Integer coins) {
         setName(name);
         setUsername(username);
@@ -45,6 +46,7 @@ public class User {
         setCoins(coins);
 
     }
+
     public User(String username, String password) {
         this(null, username, password, START_COINS);
     }
